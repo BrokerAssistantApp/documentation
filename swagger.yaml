@@ -353,7 +353,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnauthorizedErrorResponse"
 
-  /users/participants:
+  /users/members:
     get:
       summary: "Получить список участников брокера"
       description: "Возвращает список всех инвесторов и партнеров, участвующих в лотах брокера."
@@ -376,7 +376,11 @@ paths:
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/User.Member"
+                            - $ref: "#/components/schemas/User.Broker"
+                            - type: object
+                              properties:
+                                is_broker:
+                                  not: {}
                       error:
                         type: "null"
                       meta:
