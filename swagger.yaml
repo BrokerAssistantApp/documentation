@@ -3,19 +3,19 @@ info:
   title: "API BrokerAssistant"
   version: "1.0.0"
   description: |
-    **BrokerAssistant API** предоставляет функционал для управления лотами на торгах по банкротству, 
+    BrokerAssistant API предоставляет функционал для управления лотами на торгах по банкротству, 
     взаимодействия между брокерами и инвесторами, а также распределения прибыли. 
     
-    🔐 **Безопасность и авторизация:**
-    - Авторизация реализована через **JWT-токены, передаваемые в `HttpOnly`-cookie**.
-    - Для аутентификации необходимо **выполнить логин (`/auth/login`)**, после чего токен автоматически отправляется в запросах.
+    🔐 Безопасность и авторизация:
+    - Авторизация реализована через JWT-токены, передаваемые в `HttpOnly`-cookie.
+    - Для аутентификации необходимо выполнить логин (`/auth/login`), после чего токен автоматически отправляется в запросах.
     - Фронтенд должен отправлять запросы с `withCredentials: true`, чтобы браузер автоматически передавал `accessToken`.
     - Обновление `accessToken` выполняется через `refreshToken` (`/auth/refresh`).
     - Для выхода из системы вызывается `/auth/logout`, удаляющий сессионные токены.
     
-    📄 **Документация API:**
-    - Полный список эндпоинтов доступен в разделе **"Paths"**.
-    - Описание параметров запросов находится в **"Schemas"**.
+    📄 Документация API:
+    - Полный список эндпоинтов доступен в разделе "Paths".
+    - Описание параметров запросов находится в "Schemas".
 servers:
   - url: "https://api.brokerassistant.com"
     description: "Production server"
@@ -39,13 +39,13 @@ tags:
   - name: "Analytics"
     description: "Аналитические данные"
 security:
-  - SessionJWT: []
+  - SessionCookiesJWT: []
 
 paths:
   /auth/register:
     post:
       summary: "Регистрация брокера"
-      security: []
+      security: [ ]
       tags:
         - "Auth"
       requestBody:
@@ -73,6 +73,9 @@ paths:
                   - $ref: "#/components/schemas/BaseResponse"
                   - type: object
                     properties:
+                      message:
+                        type: string
+                        example: Брокер успешно зарегистрирован
                       data:
                         type: "null"
                       error:
@@ -84,22 +87,13 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/BaseResponse"
-                  - type: object
-                    properties:
-                      success:
-                        type: boolean
-                        enum: [ false ]
-                      data:
-                        type: "null"
-                      meta:
-                        type: "null"
+                $ref: "#/components/schemas/ValidationErrorResponse"
 
   /auth/login:
     post:
       summary: "Вход в систему"
-      security: []
+      description: "Создает `accessToken` и `refreshToken` (`httpOnly`)"
+      security: [ ]
       tags:
         - "Auth"
       requestBody:
@@ -125,13 +119,11 @@ paths:
                   - $ref: "#/components/schemas/BaseResponse"
                   - type: object
                     properties:
+                      message:
+                        type: string
+                        example: "Успешный вход в систему"
                       data:
-                        type: object
-                        properties:
-                          user:
-                            $ref: "#/components/schemas/User"
-                          token:
-                            type: string
+                        $ref: "#/components/schemas/User.Broker"
                       error:
                         type: "null"
                       meta:
@@ -142,28 +134,181 @@ paths:
             application/json:
               schema:
                 allOf:
+                  - $ref: "#/components/schemas/ValidationErrorResponse"
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "Неправильный логин и/или пароль"
+
+  /auth/status:
+    get:
+      summary: "Проверка статуса авторизации"
+      description: "Проверяет действительность `accessToken`. Не обновляет `accessToken` и/или `RefreshToken`"
+      tags:
+        - "Auth"
+      responses:
+        "200":
+          description: "Пользователь авторизован"
+          content:
+            application/json:
+              schema:
+                allOf:
                   - $ref: "#/components/schemas/BaseResponse"
                   - type: object
                     properties:
-                      success:
-                        type: boolean
-                        enum: [ false ]
+                      message:
+                        type: string
+                        example: "Пользователь авторизован"
                       data:
+                        $ref: "#/components/schemas/User.Broker"
+                      error:
                         type: "null"
                       meta:
                         type: "null"
+        "401":
+          description: "Пользователь не авторизован или токен истёк"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+
+  /auth/refresh:
+    post:
+      summary: "Обновление accessToken"
+      description: |
+        Если `accessToken` истёк, эндпоинт выдаст новый, используя `refreshToken`, который хранится в `httpOnly`-cookie.
+        
+        - Если `refreshToken` действителен → выдает новый `accessToken`.
+        - Если `refreshToken` истёк или отсутствует → `401 Unauthorized`, требуется повторный логин.
+      tags:
+        - "Auth"
+      responses:
+        "200":
+          description: "`accessToken` обновлен"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Сессия пользователя обновлена"
+                      data:
+                        type: "null"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Ошибка: `refreshToken` истёк или недействителен"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+
+  /auth/logout:
+    post:
+      summary: "Выход из системы"
+      description: "Удаляет `accessToken` и `refreshToken`, разлогинивает пользователя."
+      tags:
+        - "Auth"
+      responses:
+        "200":
+          description: "Успешный выход из системы"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Успешный выход из системы"
+                      data:
+                        type: "null"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь уже вышел или `refreshToken` отсутствует"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+
+  /auth/yandex/login:
+    get:
+      summary: "Перенаправляет пользователя на Яндекс"
+      tags:
+        - "Auth"
+
+  /auth/yandex/callback:
+    get:
+      summary: "Обрабатывает code, получает accessToken от Яндекса"
+      tags:
+        - "Auth"
+
+  /auth/yandex/register:
+    post:
+      summary: "Создаёт пользователя с auth_method = 'yandex'"
+      tags:
+        - "Auth"
+
+  /auth/yandex/connect:
+    post:
+      summary: "Привязывает Яндекс ID к существующему аккаунту"
+      tags:
+        - "Auth"
+
+  /auth/yandex/unlink:
+    post:
+      summary: "Отвязывает Яндекс ID"
+      tags:
+        - "Auth"
 
   /users/me:
     get:
       summary: "Получить данные текущего пользователя"
+      description: "Возвращает информацию о текущем пользователе, основываясь на `accessToken` в `httpOnly`-cookie."
       tags:
         - "Users"
       responses:
         "200":
-          description: "Данные пользователя"
+          description: "Данные текущего пользователя"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Данные пользователя"
+                      data:
+                        $ref: "#/components/schemas/User.Broker"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
 
     patch:
       summary: "Обновить данные профиля"
+      description: "Позволяет пользователю изменить своё имя"
       tags:
         - "Users"
       requestBody:
@@ -175,12 +320,73 @@ paths:
               properties:
                 name:
                   type: string
-                email:
-                  type: string
-                  format: email
+                  description: "Новое имя пользователя"
       responses:
         "200":
           description: "Профиль успешно обновлен"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Профиль успешно обновлён"
+                      data:
+                        $ref: "#/components/schemas/User.Broker"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "400":
+          description: "Ошибка валидации данных"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+
+  /users/participants:
+    get:
+      summary: "Получить список участников брокера"
+      description: "Возвращает список всех инвесторов и партнеров, участвующих в лотах брокера."
+      tags:
+        - "Users"
+      responses:
+        "200":
+          description: "Список участников брокера"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Список участников брокера"
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: "#/components/schemas/User.Member"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
 
   /lots:
     get:
@@ -352,6 +558,67 @@ components:
           description: "Дополнительные данные, например, информация о пагинации"
           $ref: '#/components/schemas/Meta'
 
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum: [ false ]
+            message:
+              type: string
+              example: "Ошибка валидации"
+            data:
+              type: string
+              example: null
+            error:
+              allOf:
+                - $ref: "#/components/schemas/Error"
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 400
+                    message:
+                      type: string
+                      example: "Некорректные данные"
+            meta:
+              type: string
+              example: null
+
+    UnauthorizedErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum: [ false ]
+            message:
+              type: string
+              example: "Пользователь не авторизован"
+            data:
+              type: string
+              example: null
+            error:
+              allOf:
+                - $ref: "#/components/schemas/Error"
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 401
+                    message:
+                      type: string
+                      example: "Доступ запрещён"
+                    details:
+                      type: string
+                      example: null
+            meta:
+              type: string
+              example: null
+
     Error:
       type: object
       properties:
@@ -378,7 +645,7 @@ components:
     Meta:
       type: object
 
-    User:
+    User.Broker:
       type: object
       properties:
         id:
@@ -391,10 +658,31 @@ components:
           description: Адрес электронной почты пользователя
         name:
           type: string
+          example: "Иванов Пётр Васильевич"
           description: Имя пользователя
         is_broker:
           type: boolean
           description: Указывает, является ли пользователь брокером
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания пользователя
+
+    User.Member:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+        name:
+          type: string
+          example: "Иванов Пётр Васильевич"
+          description: Имя пользователя
         created_at:
           type: string
           format: date-time
