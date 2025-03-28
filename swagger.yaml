@@ -28,6 +28,8 @@ tags:
     description: "Методы работы с пользователями"
   - name: "Lots"
     description: "Методы управления лотами"
+  - name: "LotStatusHistory"
+    description: "Методы управления статусами лотов"
   - name: "Members"
     description: "Управление участниками лотов"
   - name: "Transactions"
@@ -39,7 +41,7 @@ tags:
   - name: "Analytics"
     description: "Аналитические данные"
 security:
-  - SessionCookiesJWT: []
+  - SessionCookiesJWT: [ ]
 
 paths:
   /auth/register:
@@ -123,7 +125,9 @@ paths:
                         type: string
                         example: "Успешный вход в систему"
                       data:
-                        $ref: "#/components/schemas/User"
+                        oneOf:
+                          - $ref: "#/components/schemas/User.WithIsBroker"
+                          - $ref: "#/components/schemas/User.WithoutIsBroker"
                       error:
                         type: "null"
                       meta:
@@ -164,7 +168,9 @@ paths:
                         type: string
                         example: "Пользователь авторизован"
                       data:
-                        $ref: "#/components/schemas/User"
+                        oneOf:
+                          - $ref: "#/components/schemas/User.WithIsBroker"
+                          - $ref: "#/components/schemas/User.WithoutIsBroker"
                       error:
                         type: "null"
                       meta:
@@ -181,7 +187,7 @@ paths:
       summary: "Обновление accessToken"
       description: |
         Если `accessToken` истёк, эндпоинт выдаст новый, используя `refreshToken`, который хранится в `httpOnly`-cookie.
-        
+
         - Если `refreshToken` действителен → выдает новый `accessToken`.
         - Если `refreshToken` истёк или отсутствует → `401 Unauthorized`, требуется повторный логин.
       tags:
@@ -244,35 +250,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnauthorizedErrorResponse"
 
-  /auth/yandex/login:
-    get:
-      summary: "Перенаправляет пользователя на Яндекс"
-      tags:
-        - "Auth"
+  #  /auth/yandex/login:
+  #    get:
+  #      summary: "Перенаправляет пользователя на Яндекс"
+  #      tags:
+  #        - "Auth"
 
-  /auth/yandex/callback:
-    get:
-      summary: "Обрабатывает code, получает accessToken от Яндекса"
-      tags:
-        - "Auth"
+  #  /auth/yandex/callback:
+  #    get:
+  #      summary: "Обрабатывает code, получает accessToken от Яндекса"
+  #      tags:
+  #        - "Auth"
 
-  /auth/yandex/register:
-    post:
-      summary: "Создаёт пользователя с auth_method = 'yandex'"
-      tags:
-        - "Auth"
+  #  /auth/yandex/register:
+  #    post:
+  #      summary: "Создаёт пользователя с auth_method = 'yandex'"
+  #      tags:
+  #        - "Auth"
 
-  /auth/yandex/connect:
-    post:
-      summary: "Привязывает Яндекс ID к существующему аккаунту"
-      tags:
-        - "Auth"
+  #  /auth/yandex/connect:
+  #    post:
+  #      summary: "Привязывает Яндекс ID к существующему аккаунту"
+  #      tags:
+  #        - "Auth"
 
-  /auth/yandex/unlink:
-    post:
-      summary: "Отвязывает Яндекс ID"
-      tags:
-        - "Auth"
+  #  /auth/yandex/unlink:
+  #    post:
+  #      summary: "Отвязывает Яндекс ID"
+  #      tags:
+  #        - "Auth"
 
   /users/me:
     get:
@@ -294,7 +300,9 @@ paths:
                         type: string
                         example: "Данные пользователя"
                       data:
-                        $ref: "#/components/schemas/User"
+                        oneOf:
+                          - $ref: "#/components/schemas/User.WithIsBroker"
+                          - $ref: "#/components/schemas/User.WithoutIsBroker"
                       error:
                         type: "null"
                       meta:
@@ -361,7 +369,7 @@ paths:
         - "Users"
       responses:
         "200":
-          description: "Список участников брокера"
+          description: "Список участников лотов брокера"
           content:
             application/json:
               schema:
@@ -375,18 +383,7 @@ paths:
                       data:
                         type: array
                         items:
-                          allOf:
-                            - $ref: "#/components/schemas/User"
-                            - type: object
-                              properties:
-                                is_broker:
-                                  description: "Не включается в ответ"
-                                  example: null
-                              example:
-                                id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                                email: "user@example.com"
-                                name: "Иванов Пётр Васильевич"
-                                created_at: "2025-03-26T21:29:11.080Z"
+                          $ref: "#/components/schemas/User.WithoutIsBroker"
                       error:
                         type: "null"
                       meta:
@@ -420,15 +417,252 @@ paths:
               properties:
                 name:
                   type: string
-                lot_number:
+                purchasePrice:
+                  type: number
+                  format: double
+                salePrice:
+                  type: number
+                  format: double
+                brokerCommissionPercent:
+                  type: number
+                  format: float
+                brokerTaxPercent:
+                  type: number
+                  format: float
+                purchaseDate:
                   type: string
-                purchase_price:
-                  type: number
-                sale_price:
-                  type: number
+                  format: date-time
       responses:
         "201":
           description: "Лот успешно создан"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Лот успешно создан"
+                      data:
+                        type: object
+                        properties:
+                          lotId:
+                            type: string
+                            format: uuid
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+
+  /lots/{lotId}:
+    get:
+      summary: "Получить лот"
+      description: "Возвращает информацию о лоте."
+      tags:
+        - "Lots"
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "UUID идентификатор лота"
+      responses:
+        "200":
+          description: "Информация о лоте"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Информация о лоте"
+                      data:
+                        $ref: "#/components/schemas/Lot"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+        "404":
+          description: "Лот не найден"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/NotFoundErrorResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Лот не найден"
+                      data:
+                        type: "null"
+                      meta:
+                        type: "null"
+
+    patch:
+      summary: "Обновить данные лота"
+      description: "Позволяет обновить данные лота по id."
+      tags:
+        - "Lots"
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "UUID идентификатор лота"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                status:
+                  type: string
+                  enum: [ purchased, renovation, hold, listed_for_sale, sold, closed ]
+                purchasePrice:
+                  type: number
+                  format: float
+                salePrice:
+                  type: number
+                  format: float
+                brokerCommissionPercent:
+                  type: number
+                  format: float
+                brokerTaxPercent:
+                  type: number
+                  format: float
+                purchaseDate:
+                  type: string
+                  format: date
+      responses:
+        "200":
+          description: "Лот успешно обновлён"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Лот успешно обновлён"
+                      data:
+                        $ref: "#/components/schemas/Lot"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "400":
+          description: "Ошибка валидации данных"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+        "404":
+          description: "Лот не найден"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/NotFoundErrorResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Лот не найден"
+                      data:
+                        type: "null"
+                      meta:
+                        type: "null"
+
+  /lots/{lotId}/status-history:
+    get:
+      summary: "Получить историю статусов лота"
+      description: "Возвращает хронологическую историю изменения статусов лота."
+      tags:
+        - "LotStatusHistory"
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "UUID идентификатор лота"
+      responses:
+        "200":
+          description: "История статусов лота"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "История статусов лота"
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/LotStatusHistory"
+                      error:
+                        type: "null"
+                      meta:
+                        type: "null"
+        "401":
+          description: "Пользователь не авторизован"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedErrorResponse"
+        "404":
+          description: "Лот не найден"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/NotFoundErrorResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Лот не найден"
+                      data:
+                        type: "null"
+                      meta:
+                        type: "null"
 
   /lots/{lot_id}/members:
     get:
@@ -556,17 +790,17 @@ components:
           type: string
           description: "Краткое описание результата"
         data:
-          type: object
+          type: [ object, "null" ]
           nullable: true
           description: "Основные данные ответа. Может быть объектом или `null`"
         error:
           nullable: true
           description: "Информация об ошибке (присутствует, если `success: false`)"
-          $ref: '#/components/schemas/Error'
+          $ref: "#/components/schemas/Error"
         meta:
           nullable: true
           description: "Дополнительные данные, например, информация о пагинации"
-          $ref: '#/components/schemas/Meta'
+          $ref: "#/components/schemas/Meta"
 
     ValidationErrorResponse:
       allOf:
@@ -580,8 +814,7 @@ components:
               type: string
               example: "Ошибка валидации"
             data:
-              type: string
-              example: null
+              type: "null"
             error:
               allOf:
                 - $ref: "#/components/schemas/Error"
@@ -594,8 +827,7 @@ components:
                       type: string
                       example: "Некорректные данные"
             meta:
-              type: string
-              example: null
+              type: "null"
 
     UnauthorizedErrorResponse:
       allOf:
@@ -609,8 +841,7 @@ components:
               type: string
               example: "Пользователь не авторизован"
             data:
-              type: string
-              example: null
+              type: "null"
             error:
               allOf:
                 - $ref: "#/components/schemas/Error"
@@ -623,14 +854,41 @@ components:
                       type: string
                       example: "Доступ запрещён"
                     details:
-                      type: string
-                      example: null
+                      type: "null"
             meta:
+              type: "null"
+
+    NotFoundErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum: [ false ]
+            message:
               type: string
-              example: null
+              example: "Не найдено"
+            data:
+              type: "null"
+            error:
+              allOf:
+                - $ref: "#/components/schemas/Error"
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 404
+                    message:
+                      type: string
+                      example: "Данные отсутствуют"
+                    details:
+                      type: "null"
+            meta:
+              type: "null"
 
     Error:
-      type: object
+      type: [ object, "null" ]
       properties:
         code:
           type: integer
@@ -639,7 +897,7 @@ components:
           type: string
           description: "Сообщение об ошибке"
         details:
-          type: array
+          type: [ array, "null" ]
           nullable: true
           description: "Список дополнительных деталей об ошибке. Используется при валидации."
           items:
@@ -653,7 +911,7 @@ components:
                 description: "Сообщение о проблеме с этим полем"
 
     Meta:
-      type: object
+      type: [ object, "null" ]
 
     User:
       type: object
@@ -670,13 +928,22 @@ components:
           type: string
           example: "Иванов Пётр Васильевич"
           description: Имя пользователя
-        is_broker:
-          type: boolean
-          description: Указывает, является ли пользователь брокером
-        created_at:
+        createdAt:
           type: string
           format: date-time
           description: Время создания пользователя
+
+    User.WithIsBroker:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            isBroker:
+              type: boolean
+              description: Указывает, является ли пользователь брокером
+
+    User.WithoutIsBroker:
+      $ref: "#/components/schemas/User"
 
     Lot:
       type: object
@@ -685,17 +952,14 @@ components:
           type: string
           format: uuid
           description: Уникальный идентификатор лота
-        broker_id:
+        brokerId:
           type: string
           format: uuid
           description: Идентификатор брокера (ссылка на пользователя)
         name:
           type: string
           description: Название лота
-        lot_number:
-          type: string
-          nullable: true
-          description: Номер лота
+          example: "Земельный участок"
         status:
           type: string
           enum:
@@ -706,43 +970,39 @@ components:
             - sold
             - closed
           description: Статус лота
-        purchase_price:
+          example: "purchased"
+        purchasePrice:
           type: number
           format: double
           description: Цена покупки лота
-        sale_price:
+          example: 1500000.00
+        salePrice:
           type: number
           format: double
           description: Цена продажи лота
-        broker_commission_percent:
+          example: 3000000.00
+        brokerCommissionPercent:
           type: number
-          format: double
+          format: float
           description: Процент комиссии брокера
-        broker_tax_percent:
+          example: 25.00
+        brokerTaxPercent:
           type: number
-          format: double
+          format: float
           description: Процент налога с брокера
-        purchase_date:
+          example: 7.00
+        purchaseDate:
           type: string
           format: date
           description: Дата покупки лота
-        updated_at:
+        updatedAt:
           type: string
           format: date-time
           description: Время последнего обновления записи
-        created_at:
+        createdAt:
           type: string
           format: date-time
           description: Время создания записи
-      required:
-        - id
-        - broker_id
-        - name
-        - status
-        - purchase_price
-        - purchase_date
-        - updated_at
-        - created_at
 
     LotStatusHistory:
       type: object
@@ -751,10 +1011,6 @@ components:
           type: string
           format: uuid
           description: Уникальный идентификатор записи истории статуса лота
-        lot_id:
-          type: string
-          format: uuid
-          description: Идентификатор лота
         status:
           type: string
           enum:
@@ -765,63 +1021,51 @@ components:
             - sold
             - closed
           description: Статус лота
-        created_at:
+        createdAt:
           type: string
           format: date-time
           description: Дата создания записи
-      required:
-        - id
-        - lot_id
-        - status
-        - created_at
 
     LotMember:
       type: object
       properties:
-        lot_id:
+        lotId:
           type: string
           format: uuid
           description: Идентификатор лота
-        member_id:
+        memberId:
           type: string
           format: uuid
           nullable: true
           description: Идентификатор участника
-        referral_member_id:
+        referralMemberId:
           type: string
           format: uuid
           nullable: true
           description: Идентификатор реферального участника
-        share_percent:
+        sharePercent:
           type: number
           format: double
           description: Доля участника (%) в лоте
-        referral_fee_percent:
+        referralFeePercent:
           type: number
           format: double
           description: Процент реферальной комиссии
-      required:
-        - lot_id
-        - share_percent
 
     LotExpense:
       type: object
       properties:
-        lot_id:
+        lotId:
           type: string
           format: uuid
           description: Идентификатор лота
-        transaction_id:
+        transactionId:
           type: string
           format: uuid
           description: Идентификатор транзакции
         description:
           type: string
           description: Описание расходов
-      required:
-        - lot_id
-        - transaction_id
-        - description
 
     LotTransaction:
       type: object
@@ -830,11 +1074,11 @@ components:
           type: string
           format: uuid
           description: Уникальный идентификатор транзакции
-        lot_id:
+        lotId:
           type: string
           format: uuid
           description: Идентификатор лота
-        user_id:
+        userId:
           type: string
           format: uuid
           nullable: true
@@ -853,73 +1097,59 @@ components:
           type: number
           format: double
           description: Сумма транзакции
-        updated_at:
+        updatedAt:
           type: string
           format: date-time
           description: Время последнего изменения записи
-        created_at:
+        createdAt:
           type: string
           format: date-time
           description: Время создания записи
-      required:
-        - id
-        - lot_id
-        - type
-        - amount
-        - updated_at
-        - created_at
 
     LotFinancials:
       type: object
       properties:
-        lot_id:
+        lotId:
           type: string
           format: uuid
           description: Идентификатор лота
-        purchase_price:
+        purchasePrice:
           type: number
           format: double
           description: Цена покупки лота
-        sale_price:
+        salePrice:
           type: number
           format: double
           description: Цена продажи лота
-        gross_profit:
+        grossProfit:
           type: number
           format: double
           description: Валовая прибыль
-        net_profit:
+        netProfit:
           type: number
           format: double
           description: Чистая прибыль
-        broker_commission:
+        brokerCommission:
           type: number
           format: double
           description: Комиссия брокера
-        broker_tax:
+        brokerTax:
           type: number
           format: double
           description: Налог брокера
-        total_investments:
+        totalInvestments:
           type: number
           format: double
           description: Общая сумма инвестиций
-        total_payouts:
+        totalPayouts:
           type: number
           format: double
           description: Общая сумма выплат
-        total_referral_fees:
+        totalReferralFees:
           type: number
           format: double
           description: Общая сумма реферальных вознаграждений
-        created_at:
+        createdAt:
           type: string
           format: date-time
           description: Дата создания записи
-      required:
-        - lot_id
-        - purchase_price
-        - sale_price
-        - gross_profit
-        - net_profit
-        - created_at
