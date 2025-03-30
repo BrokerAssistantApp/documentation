@@ -1,8 +1,0 @@
-User.WithIsBroker:
-  allOf:
-    - $ref: "#/components/schemas/User"
-    - type: object
-      properties:
-        isBroker:
-          type: boolean
-          description: Указывает, является ли пользователь брокером

@@ -1,0 +1,173 @@
+patch:
+  summary: "Обновить параметры участника в лоте"
+  description: |
+    Позволяет изменить долю участия и реферальную комиссию участника в лоте.
+    
+    При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+    
+    Обновление невозможно, если лот находится в статусе `sold` или `closed`
+  tags:
+    - "LotMembers"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: memberId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            sharePercent:
+              type: number
+              format: float
+              description: "Новая доля участия (%)"
+              example: 20.00
+            referralMemberId:
+              type: string
+              format: uuid
+              nullable: true
+              description: "UUID участника, за которого получит реферальную комиссию"
+            referralFeePercent:
+              type: number
+              format: float
+              description: "Новый процент реферальной комиссии"
+              example: 5.00
+  responses:
+    "200":
+      description: "Участник лота успешно обновлён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник лота успешно обновлён"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации данных или обновление невозможно"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот или участник не найдены"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот или участник не найдены"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+delete:
+  summary: "Удалить участника из лота"
+  description: |
+    Удаляет участника из лота.
+    
+    Удаление невозможно, если:
+    - У участника есть транзакции с типом `payout` или `referral_fee`
+    - Лот в статусе `sold` или `closed`.
+    
+    В остальных случаях — удаление жёсткое.
+  tags:
+    - "LotMembers"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: memberId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Участник успешно удалён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник успешно удалён"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Удаление невозможно"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот или участник не найдены"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот или участник не найдены"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

@@ -17,3 +17,15 @@ User:
       type: string
       format: date-time
       description: Время создания пользователя
+
+User.WithIsBroker:
+  allOf:
+    - $ref: "#/User"
+    - type: object
+      properties:
+        isBroker:
+          type: boolean
+          description: Указывает, является ли пользователь брокером
+
+User.WithoutIsBroker:
+  $ref: "#/User"

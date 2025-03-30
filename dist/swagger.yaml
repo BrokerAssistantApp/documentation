@@ -1,0 +1,2479 @@
+openapi: 3.1.0
+info:
+  title: BrokerAssistant API
+  version: 1.0.0
+  description: "BrokerAssistant API предоставляет функционал для управления лотами на торгах по банкротству, \nвзаимодействия между брокерами и инвесторами, а также распределения прибыли. \n\n\U0001F510 Безопасность и авторизация:\n- Авторизация реализована через JWT-токены, передаваемые в `HttpOnly`-cookie.\n- Для аутентификации необходимо выполнить логин (`/auth/login`), после чего токен автоматически отправляется в запросах.\n- Фронтенд должен отправлять запросы с `withCredentials: true`, чтобы браузер автоматически передавал `accessToken`.\n- Обновление `accessToken` выполняется через `refreshToken` (`/auth/refresh`).\n- Для выхода из системы вызывается `/auth/logout`, удаляющий сессионные токены.\n\n\U0001F4C4 Документация API:\n- Полный список эндпоинтов доступен в разделе \"Paths\".\n- Описание параметров запросов находится в \"Schemas\".\n"
+servers:
+  - url: 'https://api.brokerassistant.com'
+    description: Production server
+  - url: 'http://localhost:8080'
+    description: Development server
+tags:
+  - name: Auth
+    description: Методы аутентификации
+  - name: Users
+    description: Методы работы с пользователями
+  - name: Members
+    description: Методы управления участниками
+  - name: Lots
+    description: Методы управления лотами
+  - name: LotMembers
+    description: Управление участниками лотов
+  - name: LotStatus
+    description: Методы управления статусами лотов
+  - name: Expenses
+    description: Учет расходов
+  - name: Transactions
+    description: Финансовые транзакции
+  - name: Financials
+    description: Финансовый учет по лотам
+security:
+  - SessionCookiesJWT: []
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация брокера
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Брокер успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Брокер успешно зарегистрирован
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /auth/login:
+    post:
+      summary: Вход в систему
+      description: Создает `accessToken` и `refreshToken` (`httpOnly`)
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: Успешный вход в систему
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Успешный вход в систему
+                      data:
+                        oneOf:
+                          - $ref: '#/components/schemas/User.WithIsBroker'
+                          - $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: Неправильный логин и/или пароль
+  /auth/status:
+    get:
+      summary: Проверка статуса авторизации
+      description: Проверяет действительность `accessToken`. Не обновляет `accessToken` и/или `RefreshToken`
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Пользователь авторизован
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Пользователь авторизован
+                      data:
+                        oneOf:
+                          - $ref: '#/components/schemas/User.WithIsBroker'
+                          - $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован или токен истёк
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /auth/refresh:
+    post:
+      summary: Обновление accessToken
+      description: |
+        Если `accessToken` истёк, эндпоинт выдаст новый, используя `refreshToken`, который хранится в `httpOnly`-cookie.
+
+        - Если `refreshToken` действителен → выдает новый `accessToken`.
+        - Если `refreshToken` истёк или отсутствует → `401 Unauthorized`, требуется повторный логин.
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: '`accessToken` обновлен'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Сессия пользователя обновлена
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: 'Ошибка: `refreshToken` истёк или недействителен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /auth/logout:
+    post:
+      summary: Выход из системы
+      description: 'Удаляет `accessToken` и `refreshToken`, разлогинивает пользователя.'
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Успешный выход из системы
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Успешный выход из системы
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь уже вышел или `refreshToken` отсутствует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /users/me:
+    get:
+      summary: Получить данные текущего пользователя
+      description: 'Возвращает информацию о текущем пользователе, основываясь на `accessToken` в `httpOnly`-cookie.'
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Данные текущего пользователя
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Данные пользователя
+                      data:
+                        oneOf:
+                          - $ref: '#/components/schemas/User.WithIsBroker'
+                          - $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+    patch:
+      summary: Обновить данные профиля
+      description: Позволяет пользователю изменить своё имя
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Новое имя пользователя
+      responses:
+        '200':
+          description: Профиль успешно обновлен
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Профиль успешно обновлён
+                      data:
+                        $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /members:
+    get:
+      summary: Получить список участников брокера
+      description: 'Возвращает список всех инвесторов и партнеров, участвующих в лотах брокера.'
+      tags:
+        - Members
+      responses:
+        '200':
+          description: Список участников лотов брокера
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список участников брокера
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+    post:
+      summary: Добавить участника брокера
+      description: |
+        Позволяет добавить участника брокера
+
+        Если пользователь с таким `email` уже существует, то привязывает его к списку участников конкретного брокера
+      tags:
+        - Members
+      security:
+        - SessionCookiesJWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - auth_method
+              properties:
+                name:
+                  type: string
+                  example: Иван Партнёр
+                email:
+                  type: string
+                  format: email
+                  example: ivan.partner@example.com
+      responses:
+        '201':
+          description: Участник успешно добавлен
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник успешно добавлен
+                      data:
+                        $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+  '/members/{userId}':
+    get:
+      summary: Получить участника брокера
+      description: Возвращает информацию об участнике (инвесторе или партнёре).
+      tags:
+        - Members
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация об участнике брокера
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник найден
+                      data:
+                        $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Участник не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник не найден
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    patch:
+      summary: Обновить данные участника брокера
+      description: Позволяет брокеру обновить имя или email своего инвестора/партнёра.
+      tags:
+        - Members
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Новое имя участника
+                email:
+                  type: string
+                  format: email
+                  description: Новый email участника
+      responses:
+        '200':
+          description: Участник успешно обновлён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник успешно обновлён
+                      data:
+                        $ref: '#/components/schemas/User'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Участник не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник не найден
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    delete:
+      summary: Удалить участника брокера
+      description: |
+        Удаляет участника (инвестора/партнёра).
+
+        Удаление невозможно, если:
+        - Участник участвует хотя бы в одном лоте со статусом `sold` или `closed`
+        - Участник имеет транзакции любого типа
+        - Участник использован как `referralMemberId`
+
+        В остальных случаях — удаление жёсткое.
+      tags:
+        - Members
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Участник успешно удалён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник успешно удалён
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Удаление невозможно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Участник не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник не найден
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  /lots:
+    get:
+      summary: Получить список лотов
+      description: |
+        Возвращает список всех лотов:  
+        - `Для брокера`: созданных брокером + где брокер как инвестор/партнер
+        - `Для участника`: где участник как инвестор + где участник как партнер
+
+        Позволяет фильтровать по статусу и искать по названию или номеру лота.
+      tags:
+        - Lots
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - all
+              - purchased
+              - renovation
+              - hold
+              - listed_for_sale
+              - sold
+              - closed
+            default: all
+          description: Фильтрация по статусу лота
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Поиск по имени или номеру лота
+        - name: isCreator
+          in: query
+          schema:
+            type: boolean
+          description: 'Если true — возвращаются только лоты, которые брокер создал'
+      responses:
+        '200':
+          description: Список лотов
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список лотов
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Lot.WithStatus'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '404':
+          description: Лоты не найдены по указанным параметрам
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лоты не найдены
+                      data:
+                        type: 'null'
+                      error:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: По указанным параметрам данные отсутствуют
+                      meta:
+                        type: 'null'
+    post:
+      summary: Создать новый лот
+      tags:
+        - Lots
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                purchasePrice:
+                  type: number
+                  format: double
+                salePrice:
+                  type: number
+                  format: double
+                brokerCommissionPercent:
+                  type: number
+                  format: float
+                brokerTaxPercent:
+                  type: number
+                  format: float
+                purchaseDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Лот успешно создан
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот успешно создан
+                      data:
+                        type: object
+                        properties:
+                          lotId:
+                            type: string
+                            format: uuid
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+  '/lots/{lotId}':
+    get:
+      summary: Получить лот
+      description: Возвращает информацию о лоте.
+      tags:
+        - Lots
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID идентификатор лота
+      responses:
+        '200':
+          description: Информация о лоте
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Информация о лоте
+                      data:
+                        $ref: '#/components/schemas/Lot'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    patch:
+      summary: Обновить данные лота
+      description: |
+        Позволяет обновить данные лота по id.
+
+        Обновление невозможно, если лот находится в статусе `sold` или `closed`
+      tags:
+        - Lots
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID идентификатор лота
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                purchasePrice:
+                  type: number
+                  format: float
+                salePrice:
+                  type: number
+                  format: float
+                brokerCommissionPercent:
+                  type: number
+                  format: float
+                brokerTaxPercent:
+                  type: number
+                  format: float
+                purchaseDate:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Лот успешно обновлён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот успешно обновлён
+                      data:
+                        $ref: '#/components/schemas/Lot'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации данных или обновление невозможно
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    delete:
+      summary: Удалить лот
+      description: |
+        Удаляет лот. 
+
+        Удаление невозможно, если:
+        - Есть участники
+        - Есть транзакции с типом `payout`, `broker_commission`, `broker_tax` или `referral_fee`
+        - Лот в статусе `sold` или `closed`
+
+        В остальных случаях — удаление жёсткое.
+      tags:
+        - Lots
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Лот успешно удалён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот успешно удалён
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Удаление невозможно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/members':
+    get:
+      summary: Получить список участников лота
+      tags:
+        - LotMembers
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Список участников лота
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список участников лота
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LotMember'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    post:
+      summary: Добавить участника в лот
+      description: |
+        Позволяет добавить участника в лот
+
+        При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+      tags:
+        - LotMembers
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - memberId
+              properties:
+                memberId:
+                  type: string
+                  format: uuid
+                referralMemberId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                sharePercent:
+                  type: number
+                  format: float
+                  example: 20
+                referralFeePercent:
+                  type: number
+                  format: float
+                  example: 5
+      responses:
+        '201':
+          description: Участник успешно добавлен в лот
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник успешно добавлен в лот
+                      data:
+                        $ref: '#/components/schemas/LotMember'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/members/{memberId}':
+    patch:
+      summary: Обновить параметры участника в лоте
+      description: |
+        Позволяет изменить долю участия и реферальную комиссию участника в лоте.
+
+        При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+
+        Обновление невозможно, если лот находится в статусе `sold` или `closed`
+      tags:
+        - LotMembers
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sharePercent:
+                  type: number
+                  format: float
+                  description: Новая доля участия (%)
+                  example: 20
+                referralMemberId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: 'UUID участника, за которого получит реферальную комиссию'
+                referralFeePercent:
+                  type: number
+                  format: float
+                  description: Новый процент реферальной комиссии
+                  example: 5
+      responses:
+        '200':
+          description: Участник лота успешно обновлён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник лота успешно обновлён
+                      data:
+                        $ref: '#/components/schemas/LotMember'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации данных или обновление невозможно
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот или участник не найдены
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот или участник не найдены
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    delete:
+      summary: Удалить участника из лота
+      description: |
+        Удаляет участника из лота.
+
+        Удаление невозможно, если:
+        - У участника есть транзакции с типом `payout` или `referral_fee`
+        - Лот в статусе `sold` или `closed`.
+
+        В остальных случаях — удаление жёсткое.
+      tags:
+        - LotMembers
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Участник успешно удалён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Участник успешно удалён
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Удаление невозможно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот или участник не найдены
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот или участник не найдены
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/status':
+    get:
+      summary: Получить текущий статус лота
+      tags:
+        - LotStatus
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID идентификатор лота
+      responses:
+        '200':
+          description: Текущий статус лота
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Текущий статус лота
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            example: sold
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    post:
+      summary: Обновить статус лота
+      description: |
+        Обновление статуса не возможно после `sold` или `closed`
+
+        Откат возможет только между «мягкими» статусами: `renovation`, `hold`, `listed_for_sale`
+
+        После смены статуса с `purchased` откат обратно на этот статус невозможен.
+      tags:
+        - LotStatus
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID идентификатор лота
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - purchased
+                    - renovation
+                    - hold
+                    - listed_for_sale
+                    - sold
+                    - closed
+                  example: sold
+      responses:
+        '200':
+          description: Статус лота успешно обновлён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Статус лота успешно обновлён
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            example: sold
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            description: 'Дата обновления соответствует дате обновления лота, а не дате статуса лота в истории'
+                            example: '2025-03-29T12:30:00Z'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Обновление невозможно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/status-history':
+    get:
+      summary: Получить историю статусов лота
+      description: Возвращает хронологическую историю изменения статусов лота.
+      tags:
+        - LotStatus
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID идентификатор лота
+      responses:
+        '200':
+          description: История статусов лота
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: История статусов лота
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LotStatusHistory'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/expenses':
+    get:
+      summary: Получить список расходов по лоту
+      tags:
+        - Expenses
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Список расходов лота
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список расходов по лоту
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LotExpense'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    post:
+      summary: Добавить расход по лоту
+      description: 'Добавление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
+      tags:
+        - Expenses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+                - amount
+              properties:
+                description:
+                  type: string
+                  example: Покупка стройматериалов
+                amount:
+                  type: number
+                  format: double
+                  example: 100000
+      responses:
+        '201':
+          description: Расход добавлен
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Расход добавлен
+                      data:
+                        $ref: '#/components/schemas/LotExpense'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации данных или добавление невозможно
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот или транзакция не найдены
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот или транзакция не найдены
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/expenses/{transactionId}':
+    patch:
+      summary: Обновить расход по лоту
+      description: 'Обновление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
+      tags:
+        - Expenses
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+                - amount
+              properties:
+                description:
+                  type: string
+                  example: Покупка стройматериалов
+                amount:
+                  type: number
+                  format: double
+                  example: 100000
+      responses:
+        '200':
+          description: Расход обновлён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Расход обновлён
+                      data:
+                        $ref: '#/components/schemas/LotExpense'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации данных или обновление невозможно
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот или транзакция не найдены
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот или транзакция не найдены
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+    delete:
+      summary: Удалить расход по лоту
+      description: 'Удаление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
+      tags:
+        - Expenses
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Расход успешно удалён
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Расход успешно удалён
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Удаление невозможно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот или транзакция не найдены
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот или транзакция не найдены
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/transactions':
+    get:
+      summary: Получить список транзакций по лоту
+      description: |
+        Возвращает список всех финансовых транзакций, связанных с конкретным лотом.
+
+        Поддерживает фильтрацию по типу и участнику.
+      tags:
+        - Transactions
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - investment
+              - payout
+              - broker_commission
+              - broker_tax
+              - referral_fee
+              - expense
+          description: Фильтрация по типу транзакции
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Фильтрация по участнику (user_id)
+      responses:
+        '200':
+          description: Список транзакций по лоту
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список транзакций по лоту
+                      data:
+                        type: object
+                        properties:
+                          investment:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                          payout:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                          broker_commission:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                          broker_tax:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                          referral_fee:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                          expense:
+                            $ref: '#/components/schemas/LotTransactionGroup'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+  '/lots/{lotId}/financials':
+    get:
+      summary: Получить финансовый отчёт по лоту
+      description: |
+        Возвращает агрегированные финансовые показатели по указанному лоту, включая закупочную цену, продажную цену, чистую/грязную прибыль, комиссию брокера и прочее.
+      tags:
+        - Financials
+      parameters:
+        - name: lotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID лота
+      responses:
+        '200':
+          description: Финансовый отчёт по лоту
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Финансовый отчёт по лоту
+                      data:
+                        $ref: '#/components/schemas/LotFinancials'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+        '403':
+          description: Пользователь не имеет доступа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorResponse'
+        '404':
+          description: Лот не найден
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/NotFoundErrorResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Лот не найден
+                      data:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 'Флаг успешности запроса (`true` — запрос выполнен успешно, `false` — произошла ошибка)'
+        message:
+          type: string
+          description: Краткое описание результата
+        data:
+          type:
+            - object
+            - 'null'
+          nullable: true
+          description: Основные данные ответа. Может быть объектом или `null`
+        error:
+          nullable: true
+          description: 'Информация об ошибке (присутствует, если `success: false`)'
+          $ref: '#/components/schemas/Error'
+        meta:
+          nullable: true
+          description: 'Дополнительные данные, например, информация о пагинации'
+          $ref: '#/components/schemas/Meta'
+    BadErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum:
+                - false
+            message:
+              type: string
+              example: Невозможно выполнить операцию
+            data:
+              type: 'null'
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 400
+                    message:
+                      type: string
+                      example: Описание причины
+                    details:
+                      type: 'null'
+            meta:
+              type: 'null'
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum:
+                - false
+            message:
+              type: string
+              example: Ошибка валидации
+            data:
+              type: 'null'
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 400
+                    message:
+                      type: string
+                      example: Некорректные данные
+            meta:
+              type: 'null'
+    UnauthorizedErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum:
+                - false
+            message:
+              type: string
+              example: Пользователь не авторизован
+            data:
+              type: 'null'
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 401
+                    message:
+                      type: string
+                      example: Доступ запрещён
+                    details:
+                      type: 'null'
+            meta:
+              type: 'null'
+    ForbiddenErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum:
+                - false
+            message:
+              type: string
+              example: Доступ запрещён
+            data:
+              type: 'null'
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 403
+                    message:
+                      type: string
+                      example: У вас нет прав для выполнения этого действия
+                    details:
+                      type: 'null'
+            meta:
+              type: 'null'
+    NotFoundErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum:
+                - false
+            message:
+              type: string
+              example: Не найдено
+            data:
+              type: 'null'
+            error:
+              allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 404
+                    message:
+                      type: string
+                      example: Данные отсутствуют
+                    details:
+                      type: 'null'
+            meta:
+              type: 'null'
+    Error:
+      type:
+        - object
+        - 'null'
+      properties:
+        code:
+          type: integer
+          description: 'HTTP-код ошибки (например, 400, 404 и т.д.)'
+        message:
+          type: string
+          description: Сообщение об ошибке
+        details:
+          type:
+            - array
+            - 'null'
+          nullable: true
+          description: Список дополнительных деталей об ошибке. Используется при валидации.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: 'Название поля, вызвавшего ошибку'
+              message:
+                type: string
+                description: Сообщение о проблеме с этим полем
+    Meta:
+      type:
+        - object
+        - 'null'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+        name:
+          type: string
+          example: Иванов Пётр Васильевич
+          description: Имя пользователя
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания пользователя
+    User.WithIsBroker:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            isBroker:
+              type: boolean
+              description: 'Указывает, является ли пользователь брокером'
+    User.WithoutIsBroker:
+      $ref: '#/components/schemas/User'
+    Lot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор лота
+        brokerId:
+          type: string
+          format: uuid
+          description: Идентификатор брокера (ссылка на пользователя)
+        name:
+          type: string
+          description: Название лота
+          example: Земельный участок
+        purchasePrice:
+          type: number
+          format: double
+          description: Цена покупки лота
+          example: 1500000
+        salePrice:
+          type: number
+          format: double
+          description: Цена продажи лота
+          example: 3000000
+        brokerCommissionPercent:
+          type: number
+          format: float
+          description: Процент комиссии брокера
+          example: 25
+        brokerTaxPercent:
+          type: number
+          format: float
+          description: Процент налога с брокера
+          example: 7
+        purchaseDate:
+          type: string
+          format: date
+          description: Дата покупки лота
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания записи
+    Lot.WithoutStatus:
+      $ref: '#/components/schemas/Lot'
+    Lot.WithStatus:
+      allOf:
+        - $ref: '#/components/schemas/Lot'
+        - properties:
+            status:
+              type: string
+              enum:
+                - purchased
+                - renovation
+                - hold
+                - listed_for_sale
+                - sold
+                - closed
+              description: Статус лота
+              example: purchased
+    LotMember:
+      type: object
+      properties:
+        lotId:
+          type: string
+          format: uuid
+          description: Идентификатор лота
+        memberId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор участника
+        referralMemberId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор реферального участника
+        sharePercent:
+          type: number
+          format: float
+          description: Доля участника (%) в лоте
+          example: 20
+        referralFeePercent:
+          type: number
+          format: float
+          description: Процент реферальной комиссии
+          example: 5
+    LotStatusHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор записи истории статуса лота
+        status:
+          type: string
+          enum:
+            - purchased
+            - renovation
+            - hold
+            - listed_for_sale
+            - sold
+            - closed
+          description: Статус лота
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания записи
+    LotExpense:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+          description: Идентификатор транзакции
+        description:
+          type: string
+          description: Описание расходов
+          example: Покупка стройматериалов
+        amount:
+          type: number
+          format: double
+          description: Сумма транзакции
+          example: 100000
+    LotTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор транзакции
+        lotId:
+          type: string
+          format: uuid
+          description: Идентификатор лота
+        userId:
+          type: string
+          format: uuid
+          nullable: true
+          description: 'Идентификатор пользователя, связанного с транзакцией'
+        type:
+          type: string
+          enum:
+            - investment
+            - payout
+            - broker_commission
+            - broker_tax
+            - referral_fee
+            - expense
+          description: Тип транзакции
+        amount:
+          type: number
+          format: double
+          description: Сумма транзакции
+          example: 100000
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего изменения
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания
+    LotTransactionGroup:
+      type: object
+      properties:
+        total:
+          type: number
+          format: double
+          example: 1000000
+        transactions:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/LotTransaction'
+              - type: object
+                properties:
+                  amount:
+                    type: number
+                    format: double
+                    example: 1000000
+                  type:
+                    type: string
+                    example: investment
+    LotFinancials:
+      type: object
+      properties:
+        lotId:
+          type: string
+          format: uuid
+          description: Идентификатор лота
+        purchasePrice:
+          type: number
+          format: double
+          description: Цена покупки лота
+        salePrice:
+          type: number
+          format: double
+          description: Цена продажи лота
+        grossProfit:
+          type: number
+          format: double
+          description: Валовая прибыль
+        netProfit:
+          type: number
+          format: double
+          description: Чистая прибыль
+        brokerCommission:
+          type: number
+          format: double
+          description: Комиссия брокера
+        brokerTax:
+          type: number
+          format: double
+          description: Налог брокера
+        totalInvestments:
+          type: number
+          format: double
+          description: Общая сумма инвестиций
+        totalPayouts:
+          type: number
+          format: double
+          description: Общая сумма выплат
+        totalReferralFees:
+          type: number
+          format: double
+          description: Общая сумма реферальных вознаграждений
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания записи
+  securitySchemes:
+    SessionCookiesJWT:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: |
+        Авторизация через access_token, установленный как httpOnly cookie.
+        Используется для аутентификации всех защищённых эндпоинтов.

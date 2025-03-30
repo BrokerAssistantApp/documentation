@@ -22,7 +22,6 @@ yarn-error.log*
 /node_modules/
 
 # Generated files and folders
-/dist/
 /out/
 /build/
 

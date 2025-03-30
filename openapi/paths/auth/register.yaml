@@ -25,7 +25,7 @@ post:
         application/json:
           schema:
             allOf:
-              - $ref: "#/components/schemas/BaseResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
               - type: object
                 properties:
                   message:
@@ -42,4 +42,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ValidationErrorResponse"
+            $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"

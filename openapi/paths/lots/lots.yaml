@@ -1,0 +1,141 @@
+get:
+  summary: "Получить список лотов"
+  description: |
+    Возвращает список всех лотов:  
+    - `Для брокера`: созданных брокером + где брокер как инвестор/партнер
+    - `Для участника`: где участник как инвестор + где участник как партнер
+    
+    Позволяет фильтровать по статусу и искать по названию или номеру лота.
+  tags:
+    - "Lots"
+  parameters:
+    - name: status
+      in: query
+      schema:
+        type: string
+        enum: [ all, purchased, renovation, hold, listed_for_sale, sold, closed ]
+        default: all
+      description: "Фильтрация по статусу лота"
+    - name: search
+      in: query
+      schema:
+        type: string
+      description: "Поиск по имени или номеру лота"
+    - name: isCreator
+      in: query
+      schema:
+        type: boolean
+      description: "Если true — возвращаются только лоты, которые брокер создал"
+  responses:
+    "200":
+      description: "Список лотов"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список лотов"
+                  data:
+                    type: array
+                    items:
+                      $ref: "../../openapi.yaml#/components/schemas/Lot.WithStatus"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "404":
+      description: "Лоты не найдены по указанным параметрам"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лоты не найдены"
+                  data:
+                    type: "null"
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "По указанным параметрам данные отсутствуют"
+                  meta:
+                    type: "null"
+
+post:
+  summary: "Создать новый лот"
+  tags:
+    - "Lots"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            purchasePrice:
+              type: number
+              format: double
+            salePrice:
+              type: number
+              format: double
+            brokerCommissionPercent:
+              type: number
+              format: float
+            brokerTaxPercent:
+              type: number
+              format: float
+            purchaseDate:
+              type: string
+              format: date-time
+  responses:
+    "201":
+      description: "Лот успешно создан"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот успешно создан"
+                  data:
+                    type: object
+                    properties:
+                      lotId:
+                        type: string
+                        format: uuid
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"

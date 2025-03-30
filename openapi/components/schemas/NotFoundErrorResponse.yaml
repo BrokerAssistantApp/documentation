@@ -1,6 +1,6 @@
 NotFoundErrorResponse:
   allOf:
-    - $ref: "#/components/schemas/BaseResponse"
+    - $ref: "./BaseResponse.yaml#/BaseResponse"
     - type: object
       properties:
         success:
@@ -13,7 +13,7 @@ NotFoundErrorResponse:
           type: "null"
         error:
           allOf:
-            - $ref: "#/components/schemas/Error"
+            - $ref: "./Error.yaml#/Error"
             - type: object
               properties:
                 code:

@@ -32,7 +32,7 @@ tags:
     description: "Методы управления лотами"
   - name: "LotMembers"
     description: "Управление участниками лотов"
-  - name: "LotStatusHistory"
+  - name: "LotStatus"
     description: "Методы управления статусами лотов"
   - name: "Expenses"
     description: "Учет расходов"
@@ -48,71 +48,137 @@ security:
 paths:
   /auth/register:
     $ref: './paths/auth/register.yaml'
+
   /auth/login:
     $ref: './paths/auth/login.yaml'
-#  /auth/status:
-#    $ref: './paths/auth/logout.yaml'
-#  /auth/refresh:
-#    $ref: './paths/auth/logout.yaml'
-#  /auth/logout:
-#    $ref: './paths/auth/logout.yaml'
-#  /users/me:
-#    $ref: './paths/auth/logout.yaml'
-#  /members:
-#    $ref: './paths/auth/logout.yaml'
-#  /members/{userId}:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/members:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/members/{memberId}:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/status-history:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/expenses:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/expenses/{transactionId}:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/transactions:
-#    $ref: './paths/auth/logout.yaml'
-#  /lots/{lotId}/financials:
-#    $ref: './paths/auth/logout.yaml'
+
+  /auth/status:
+    $ref: './paths/auth/status.yaml'
+
+  /auth/refresh:
+    $ref: './paths/auth/refresh.yaml'
+
+  /auth/logout:
+    $ref: './paths/auth/logout.yaml'
+
+#  /auth/yandex/login:
+#    get:
+#      summary: "Перенаправляет пользователя на Яндекс"
+#      tags:
+#        - "Auth"
+
+#  /auth/yandex/callback:
+#    get:
+#      summary: "Обрабатывает code, получает accessToken от Яндекса"
+#      tags:
+#        - "Auth"
+
+#  /auth/yandex/register:
+#    post:
+#      summary: "Создаёт пользователя с auth_method = 'yandex'"
+#      tags:
+#        - "Auth"
+
+#  /auth/yandex/connect:
+#    post:
+#      summary: "Привязывает Яндекс ID к существующему аккаунту"
+#      tags:
+#        - "Auth"
+
+#  /auth/yandex/unlink:
+#    post:
+#      summary: "Отвязывает Яндекс ID"
+#      tags:
+#        - "Auth"
+
+  /users/me:
+    $ref: './paths/users/users.me.yaml'
+
+  /members:
+    $ref: './paths/members/members.yaml'
+
+  /members/{userId}:
+    $ref: './paths/members/members.userId.yaml'
+
+  /lots:
+    $ref: './paths/lots/lots.yaml'
+
+  /lots/{lotId}:
+    $ref: './paths/lots/lots.lotId.yaml'
+
+  /lots/{lotId}/members:
+    $ref: './paths/lotMembers/members.yaml'
+
+  /lots/{lotId}/members/{memberId}:
+    $ref: './paths/lotMembers/members.memberId.yaml'
+
+  /lots/{lotId}/status:
+    $ref: './paths/lotStatus/status.yaml'
+
+  /lots/{lotId}/status-history:
+    $ref: './paths/lotStatus/status-history.yaml'
+
+  /lots/{lotId}/expenses:
+    $ref: './paths/expenses/expenses.yaml'
+
+  /lots/{lotId}/expenses/{transactionId}:
+    $ref: './paths/expenses/expenses.transactionId.yaml'
+
+  /lots/{lotId}/transactions:
+    $ref: './paths/transactions/transactions.yaml'
+
+  /lots/{lotId}/financials:
+    $ref: './paths/financials/financials.yaml'
+
+#  /analytics/dashboard:
+#    get:
+#      summary: "Получить общую статистику"
+#      tags:
+#        - "Analytics"
+#      responses:
+#        "200":
+#          description: "Данные аналитики"
 components:
-  securitySchemes:
-    $ref: './components/securitySchemes.yaml'
   schemas:
     BaseResponse:
-      $ref: './components/schemas/BaseResponse.yaml'
+      $ref: './components/schemas/BaseResponse.yaml#/BaseResponse'
+    BadErrorResponse:
+      $ref: './components/schemas/BadErrorResponse.yaml#/BadErrorResponse'
     ValidationErrorResponse:
-      $ref: './components/schemas/ValidationErrorResponse.yaml'
+      $ref: './components/schemas/BadErrorResponse.yaml#/ValidationErrorResponse'
     UnauthorizedErrorResponse:
-      $ref: './components/schemas/UnauthorizedErrorResponse.yaml'
+      $ref: './components/schemas/UnauthorizedErrorResponse.yaml#/UnauthorizedErrorResponse'
+    ForbiddenErrorResponse:
+      $ref: './components/schemas/ForbiddenErrorResponse.yaml#/ForbiddenErrorResponse'
     NotFoundErrorResponse:
-      $ref: './components/schemas/NotFoundErrorResponse.yaml'
+      $ref: './components/schemas/NotFoundErrorResponse.yaml#/NotFoundErrorResponse'
     Error:
-      $ref: './components/schemas/Error.yaml'
+      $ref: './components/schemas/Error.yaml#/Error'
     Meta:
-      $ref: './components/schemas/Meta.yaml'
+      $ref: './components/schemas/Meta.yaml#/Meta'
     User:
-      $ref: './components/schemas/User.yaml'
+      $ref: './components/schemas/User.yaml#/User'
     User.WithIsBroker:
-      $ref: './components/schemas/User.WithIsBroker.yaml'
+      $ref: './components/schemas/User.yaml#/User.WithIsBroker'
     User.WithoutIsBroker:
-      $ref: './components/schemas/User.WithoutIsBroker.yaml'
+      $ref: './components/schemas/User.yaml#/User.WithoutIsBroker'
     Lot:
-      $ref: './components/schemas/Lot.yaml'
+      $ref: './components/schemas/Lot.yaml#/Lot'
+    Lot.WithoutStatus:
+      $ref: './components/schemas/Lot.yaml#/Lot.WithoutStatus'
+    Lot.WithStatus:
+      $ref: './components/schemas/Lot.yaml#/Lot.WithStatus'
     LotMember:
-      $ref: './components/schemas/LotMember.yaml'
+      $ref: './components/schemas/LotMember.yaml#/LotMember'
     LotStatusHistory:
-      $ref: './components/schemas/LotStatusHistory.yaml'
+      $ref: './components/schemas/LotStatusHistory.yaml#/LotStatusHistory'
     LotExpense:
-      $ref: './components/schemas/LotExpense.yaml'
+      $ref: './components/schemas/LotExpense.yaml#/LotExpense'
     LotTransaction:
-      $ref: './components/schemas/LotTransaction.yaml'
+      $ref: './components/schemas/LotTransaction.yaml#/LotTransaction'
     LotTransactionGroup:
-      $ref: './components/schemas/LotTransactionGroup.yaml'
+      $ref: './components/schemas/LotTransaction.yaml#/LotTransactionGroup'
     LotFinancials:
-      $ref: './components/schemas/LotFinancials.yaml'
+      $ref: './components/schemas/LotFinancials.yaml#/LotFinancials'
+  securitySchemes:
+    $ref: './components/securitySchemes.yaml'

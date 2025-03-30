@@ -24,7 +24,7 @@ post:
         application/json:
           schema:
             allOf:
-              - $ref: "#/components/schemas/BaseResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
               - type: object
                 properties:
                   message:
@@ -32,8 +32,8 @@ post:
                     example: "Успешный вход в систему"
                   data:
                     oneOf:
-                      - $ref: "#/components/schemas/User.WithIsBroker"
-                      - $ref: "#/components/schemas/User.WithoutIsBroker"
+                      - $ref: "../../openapi.yaml#/components/schemas/User.WithIsBroker"
+                      - $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
                   error:
                     type: "null"
                   meta:
@@ -44,7 +44,7 @@ post:
         application/json:
           schema:
             allOf:
-              - $ref: "#/components/schemas/ValidationErrorResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
               - type: object
                 properties:
                   error:

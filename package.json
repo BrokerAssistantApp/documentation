@@ -1,0 +1,24 @@
+{
+  "name": "documentation",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build:swagger": "swagger-cli bundle openapi/openapi.yaml -o dist/swagger.yaml --type yaml",
+    "watch:swagger": "chokidar 'openapi/**/*' -c 'npm run build:swagger'",
+    "serve:swagger": "live-server dist",
+    "watch:serve:swagger": "npm-run-all --parallel watch:swagger serve:swagger",
+    "swagger:validate": "swagger-cli validate dist/swagger.yaml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BrokerAssistantApp/documentation.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "live-server": "^1.2.2",
+    "npm-run-all": "^4.1.5",
+    "swagger-cli": "^4.0.4",
+    "swagger-ui-dist": "^5.20.2"
+  }
+}

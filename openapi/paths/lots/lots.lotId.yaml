@@ -1,0 +1,224 @@
+get:
+  summary: "Получить лот"
+  description: "Возвращает информацию о лоте."
+  tags:
+    - "Lots"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "UUID идентификатор лота"
+  responses:
+    "200":
+      description: "Информация о лоте"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Информация о лоте"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+patch:
+  summary: "Обновить данные лота"
+  description: |
+    Позволяет обновить данные лота по id.
+    
+    Обновление невозможно, если лот находится в статусе `sold` или `closed`
+  tags:
+    - "Lots"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "UUID идентификатор лота"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            purchasePrice:
+              type: number
+              format: float
+            salePrice:
+              type: number
+              format: float
+            brokerCommissionPercent:
+              type: number
+              format: float
+            brokerTaxPercent:
+              type: number
+              format: float
+            purchaseDate:
+              type: string
+              format: date
+  responses:
+    "200":
+      description: "Лот успешно обновлён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот успешно обновлён"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации данных или обновление невозможно"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+delete:
+  summary: "Удалить лот"
+  description: |
+    Удаляет лот. 
+    
+    Удаление невозможно, если:
+    - Есть участники
+    - Есть транзакции с типом `payout`, `broker_commission`, `broker_tax` или `referral_fee`
+    - Лот в статусе `sold` или `closed`
+    
+    В остальных случаях — удаление жёсткое.
+  tags:
+    - "Lots"
+  parameters:
+    - name: lot_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Лот успешно удалён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот успешно удалён"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Удаление невозможно"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

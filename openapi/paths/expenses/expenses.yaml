@@ -1,0 +1,136 @@
+get:
+  summary: "Получить список расходов по лоту"
+  tags:
+    - "Expenses"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Список расходов лота"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список расходов по лоту"
+                  data:
+                    type: array
+                    items:
+                      $ref: "../../openapi.yaml#/components/schemas/LotExpense"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+post:
+  summary: "Добавить расход по лоту"
+  description: "Добавление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`"
+  tags:
+    - "Expenses"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [ description, amount ]
+          properties:
+            description:
+              type: string
+              example: "Покупка стройматериалов"
+            amount:
+              type: number
+              format: double
+              example: 100000.00
+  responses:
+    "201":
+      description: "Расход добавлен"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Расход добавлен"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/LotExpense"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации данных или добавление невозможно"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+              - $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот или транзакция не найдены"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот или транзакция не найдены"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

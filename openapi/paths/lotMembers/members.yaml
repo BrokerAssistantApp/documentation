@@ -1,0 +1,152 @@
+get:
+  summary: "Получить список участников лота"
+  tags:
+    - "LotMembers"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Список участников лота"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список участников лота"
+                  data:
+                    type: array
+                    items:
+                      $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+post:
+  summary: "Добавить участника в лот"
+  description: |
+    Позволяет добавить участника в лот
+    
+    При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+  tags:
+    - "LotMembers"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [ memberId ]
+          properties:
+            memberId:
+              type: string
+              format: uuid
+            referralMemberId:
+              type: string
+              format: uuid
+              nullable: true
+            sharePercent:
+              type: number
+              format: float
+              example: 20.00
+            referralFeePercent:
+              type: number
+              format: float
+              example: 5.00
+  responses:
+    "201":
+      description: "Участник успешно добавлен в лот"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник успешно добавлен в лот"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

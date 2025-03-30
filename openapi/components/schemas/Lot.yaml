@@ -13,17 +13,6 @@ Lot:
       type: string
       description: Название лота
       example: "Земельный участок"
-    status:
-      type: string
-      enum:
-        - purchased
-        - renovation
-        - hold
-        - listed_for_sale
-        - sold
-        - closed
-      description: Статус лота
-      example: "purchased"
     purchasePrice:
       type: number
       format: double
@@ -56,3 +45,22 @@ Lot:
       type: string
       format: date-time
       description: Время создания записи
+
+Lot.WithoutStatus:
+  $ref: "#/Lot"
+
+Lot.WithStatus:
+  allOf:
+    - $ref: "#/Lot"
+    - properties:
+        status:
+          type: string
+          enum:
+            - purchased
+            - renovation
+            - hold
+            - listed_for_sale
+            - sold
+            - closed
+          description: Статус лота
+          example: "purchased"

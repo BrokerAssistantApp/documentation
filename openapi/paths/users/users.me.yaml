@@ -1,0 +1,79 @@
+get:
+  summary: "Получить данные текущего пользователя"
+  description: "Возвращает информацию о текущем пользователе, основываясь на `accessToken` в `httpOnly`-cookie."
+  tags:
+    - "Users"
+  responses:
+    "200":
+      description: "Данные текущего пользователя"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные пользователя"
+                  data:
+                    oneOf:
+                      - $ref: "../../openapi.yaml#/components/schemas/User.WithIsBroker"
+                      - $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+
+patch:
+  summary: "Обновить данные профиля"
+  description: "Позволяет пользователю изменить своё имя"
+  tags:
+    - "Users"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Новое имя пользователя"
+  responses:
+    "200":
+      description: "Профиль успешно обновлен"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Профиль успешно обновлён"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/User"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации данных"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"

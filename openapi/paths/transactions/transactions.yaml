@@ -1,0 +1,95 @@
+get:
+  summary: "Получить список транзакций по лоту"
+  description: |
+    Возвращает список всех финансовых транзакций, связанных с конкретным лотом.
+    
+    Поддерживает фильтрацию по типу и участнику.
+  tags:
+    - "Transactions"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: type
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - investment
+          - payout
+          - broker_commission
+          - broker_tax
+          - referral_fee
+          - expense
+      description: "Фильтрация по типу транзакции"
+    - name: user_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: "Фильтрация по участнику (user_id)"
+  responses:
+    "200":
+      description: "Список транзакций по лоту"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список транзакций по лоту"
+                  data:
+                    type: object
+                    properties:
+                      investment:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                      payout:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                      broker_commission:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                      broker_tax:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                      referral_fee:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                      expense:
+                        $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

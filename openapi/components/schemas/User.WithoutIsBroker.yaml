@@ -1,2 +1,0 @@
-User.WithoutIsBroker:
-  $ref: "#/components/schemas/User"

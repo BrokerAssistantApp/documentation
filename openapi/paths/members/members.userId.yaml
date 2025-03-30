@@ -1,0 +1,213 @@
+get:
+  summary: "Получить участника брокера"
+  description: "Возвращает информацию об участнике (инвесторе или партнёре)."
+  tags:
+    - "Members"
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Информация об участнике брокера"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник найден"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Участник не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник не найден"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+patch:
+  summary: "Обновить данные участника брокера"
+  description: "Позволяет брокеру обновить имя или email своего инвестора/партнёра."
+  tags:
+    - "Members"
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Новое имя участника"
+            email:
+              type: string
+              format: email
+              description: "Новый email участника"
+  responses:
+    "200":
+      description: "Участник успешно обновлён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник успешно обновлён"
+                  data:
+                    $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Ошибка валидации"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ValidationErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Участник не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник не найден"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+
+delete:
+  summary: "Удалить участника брокера"
+  description: |
+    Удаляет участника (инвестора/партнёра).
+    
+    Удаление невозможно, если:
+    - Участник участвует хотя бы в одном лоте со статусом `sold` или `closed`
+    - Участник имеет транзакции любого типа
+    - Участник использован как `referralMemberId`
+    
+    В остальных случаях — удаление жёсткое.
+  tags:
+    - "Members"
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: "Участник успешно удалён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник успешно удалён"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Удаление невозможно"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Участник не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Участник не найден"
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"

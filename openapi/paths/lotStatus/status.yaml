@@ -1,0 +1,163 @@
+get:
+  summary: "Получить текущий статус лота"
+  tags:
+    - "LotStatus"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "UUID идентификатор лота"
+  responses:
+    "200":
+      description: "Текущий статус лота"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Текущий статус лота"
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: "sold"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"
+            
+post:
+  summary: "Обновить статус лота"
+  description: |
+    Обновление статуса не возможно после `sold` или `closed`
+    
+    Откат возможет только между «мягкими» статусами: `renovation`, `hold`, `listed_for_sale`
+    
+    После смены статуса с `purchased` откат обратно на этот статус невозможен.
+  tags:
+    - "LotStatus"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "UUID идентификатор лота"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              enum:
+                - purchased
+                - renovation
+                - hold
+                - listed_for_sale
+                - sold
+                - closed
+              example: sold
+  responses:
+    "200":
+      description: "Статус лота успешно обновлён"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Статус лота успешно обновлён"
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: "sold"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: Дата обновления соответствует дате обновления лота, а не дате статуса лота в истории
+                        example: "2025-03-29T12:30:00Z"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    "400":
+      description: "Обновление невозможно"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/BadErrorResponse"
+    "401":
+      description: "Пользователь не авторизован"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
+    "403":
+      description: "Пользователь не имеет доступа"
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
+    "404":
+      description: "Лот не найден"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../openapi.yaml#/components/schemas/NotFoundErrorResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Лот не найден"
+                  data:
+                    type: "null"
+                  meta:
+                    type: "null"

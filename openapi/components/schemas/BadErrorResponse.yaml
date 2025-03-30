@@ -1,0 +1,55 @@
+BadErrorResponse:
+  allOf:
+    - $ref: "./BaseResponse.yaml#/BaseResponse"
+    - type: object
+      properties:
+        success:
+          type: boolean
+          enum: [ false ]
+        message:
+          type: string
+          example: "Невозможно выполнить операцию"
+        data:
+          type: "null"
+        error:
+          allOf:
+            - $ref: "./Error.yaml#/Error"
+            - type: object
+              properties:
+                code:
+                  type: integer
+                  example: 400
+                message:
+                  type: string
+                  example: "Описание причины"
+                details:
+                  type: "null"
+        meta:
+          type: "null"
+
+ValidationErrorResponse:
+  allOf:
+    - $ref: "./BaseResponse.yaml#/BaseResponse"
+    - type: object
+      properties:
+        success:
+          type: boolean
+          enum: [ false ]
+        message:
+          type: string
+          example: "Ошибка валидации"
+        data:
+          type: "null"
+        error:
+          allOf:
+            - $ref: "./Error.yaml#/Error"
+            - type: object
+              properties:
+                code:
+                  type: integer
+                  example: 400
+                message:
+                  type: string
+                  example: "Некорректные данные"
+        meta:
+          type: "null"
