@@ -1,0 +1,58 @@
+Lot:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Уникальный идентификатор лота
+    brokerId:
+      type: string
+      format: uuid
+      description: Идентификатор брокера (ссылка на пользователя)
+    name:
+      type: string
+      description: Название лота
+      example: "Земельный участок"
+    status:
+      type: string
+      enum:
+        - purchased
+        - renovation
+        - hold
+        - listed_for_sale
+        - sold
+        - closed
+      description: Статус лота
+      example: "purchased"
+    purchasePrice:
+      type: number
+      format: double
+      description: Цена покупки лота
+      example: 1500000.00
+    salePrice:
+      type: number
+      format: double
+      description: Цена продажи лота
+      example: 3000000.00
+    brokerCommissionPercent:
+      type: number
+      format: float
+      description: Процент комиссии брокера
+      example: 25.00
+    brokerTaxPercent:
+      type: number
+      format: float
+      description: Процент налога с брокера
+      example: 7.00
+    purchaseDate:
+      type: string
+      format: date
+      description: Дата покупки лота
+    updatedAt:
+      type: string
+      format: date-time
+      description: Время последнего обновления записи
+    createdAt:
+      type: string
+      format: date-time
+      description: Время создания записи

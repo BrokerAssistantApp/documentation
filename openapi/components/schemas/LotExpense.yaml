@@ -1,0 +1,16 @@
+LotExpense:
+  type: object
+  properties:
+    transactionId:
+      type: string
+      format: uuid
+      description: Идентификатор транзакции
+    description:
+      type: string
+      description: Описание расходов
+      example: Покупка стройматериалов
+    amount:
+      type: number
+      format: double
+      description: Сумма транзакции
+      example: 100000.0

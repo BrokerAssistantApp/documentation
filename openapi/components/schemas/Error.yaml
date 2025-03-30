@@ -1,0 +1,22 @@
+Error:
+  type: [ object, "null" ]
+  properties:
+    code:
+      type: integer
+      description: "HTTP-код ошибки (например, 400, 404 и т.д.)"
+    message:
+      type: string
+      description: "Сообщение об ошибке"
+    details:
+      type: [ array, "null" ]
+      nullable: true
+      description: "Список дополнительных деталей об ошибке. Используется при валидации."
+      items:
+        type: object
+        properties:
+          field:
+            type: string
+            description: "Название поля, вызвавшего ошибку"
+          message:
+            type: string
+            description: "Сообщение о проблеме с этим полем"

@@ -1,0 +1,28 @@
+NotFoundErrorResponse:
+  allOf:
+    - $ref: "#/components/schemas/BaseResponse"
+    - type: object
+      properties:
+        success:
+          type: boolean
+          enum: [ false ]
+        message:
+          type: string
+          example: "Не найдено"
+        data:
+          type: "null"
+        error:
+          allOf:
+            - $ref: "#/components/schemas/Error"
+            - type: object
+              properties:
+                code:
+                  type: integer
+                  example: 404
+                message:
+                  type: string
+                  example: "Данные отсутствуют"
+                details:
+                  type: "null"
+        meta:
+          type: "null"

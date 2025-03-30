@@ -1,0 +1,21 @@
+LotStatusHistory:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Уникальный идентификатор записи истории статуса лота
+    status:
+      type: string
+      enum:
+        - purchased
+        - renovation
+        - hold
+        - listed_for_sale
+        - sold
+        - closed
+      description: Статус лота
+    createdAt:
+      type: string
+      format: date-time
+      description: Дата создания записи

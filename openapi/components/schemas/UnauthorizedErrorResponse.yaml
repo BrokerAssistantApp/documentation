@@ -1,0 +1,28 @@
+UnauthorizedErrorResponse:
+  allOf:
+    - $ref: "#/components/schemas/BaseResponse"
+    - type: object
+      properties:
+        success:
+          type: boolean
+          enum: [ false ]
+        message:
+          type: string
+          example: "Пользователь не авторизован"
+        data:
+          type: "null"
+        error:
+          allOf:
+            - $ref: "#/components/schemas/Error"
+            - type: object
+              properties:
+                code:
+                  type: integer
+                  example: 401
+                message:
+                  type: string
+                  example: "Доступ запрещён"
+                details:
+                  type: "null"
+        meta:
+          type: "null"

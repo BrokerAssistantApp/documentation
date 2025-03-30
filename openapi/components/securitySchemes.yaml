@@ -1,0 +1,7 @@
+SessionCookiesJWT:
+  type: apiKey
+  in: cookie
+  name: access_token
+  description: |
+    Авторизация через access_token, установленный как httpOnly cookie.
+    Используется для аутентификации всех защищённых эндпоинтов.

@@ -1,0 +1,27 @@
+LotMember:
+  type: object
+  properties:
+    lotId:
+      type: string
+      format: uuid
+      description: Идентификатор лота
+    memberId:
+      type: string
+      format: uuid
+      nullable: true
+      description: Идентификатор участника
+    referralMemberId:
+      type: string
+      format: uuid
+      nullable: true
+      description: Идентификатор реферального участника
+    sharePercent:
+      type: number
+      format: float
+      description: Доля участника (%) в лоте
+      example: 20
+    referralFeePercent:
+      type: number
+      format: float
+      description: Процент реферальной комиссии
+      example: 5
