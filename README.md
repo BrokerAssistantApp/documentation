@@ -3,4 +3,4 @@
 - [Структура интерфейса](https://github.com/BrokerAssistantApp/documentation/wiki/Структура-интерфейса)
 - [Структура базы данных](https://github.com/BrokerAssistantApp/documentation/wiki/Структура-базы-данных)
 - [Структура ответов от бекенда](https://github.com/BrokerAssistantApp/documentation/wiki/Структура-ответов-от-бекенда)
-- [API swagger](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/BrokerAssistantApp/documentation/refs/heads/main/swagger.yaml)
+- [API swagger](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/BrokerAssistantApp/documentation/refs/heads/main/dist/swagger.yaml)
