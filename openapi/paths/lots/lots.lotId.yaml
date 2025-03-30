@@ -169,7 +169,7 @@ delete:
   tags:
     - "Lots"
   parameters:
-    - name: lot_id
+    - name: lotId
       in: path
       required: true
       schema:

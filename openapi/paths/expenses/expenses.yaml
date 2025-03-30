@@ -64,6 +64,13 @@ post:
   description: "Добавление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`"
   tags:
     - "Expenses"
+  parameters:
+    - name: lotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   requestBody:
     required: true
     content:
