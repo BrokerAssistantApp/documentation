@@ -4,7 +4,7 @@ get:
   tags:
     - "Members"
   parameters:
-    - name: userId
+    - name: brokerMemberId
       in: path
       required: true
       schema:
@@ -62,11 +62,11 @@ get:
 
 patch:
   summary: "Обновить данные участника брокера"
-  description: "Позволяет брокеру обновить имя или email своего инвестора/партнёра."
+  description: "Позволяет брокеру обновить данные своего инвестора/партнёра."
   tags:
     - "Members"
   parameters:
-    - name: userId
+    - name: brokerMemberId
       in: path
       required: true
       schema:
@@ -82,10 +82,6 @@ patch:
             name:
               type: string
               description: "Новое имя участника"
-            email:
-              type: string
-              format: email
-              description: "Новый email участника"
   responses:
     "200":
       description: "Участник успешно обновлён"
@@ -147,16 +143,13 @@ delete:
   description: |
     Удаляет участника (инвестора/партнёра).
     
-    Удаление невозможно, если:
-    - Участник участвует хотя бы в одном лоте со статусом `sold` или `closed`
-    - Участник имеет транзакции любого типа
-    - Участник использован как `referralMemberId`
-    
-    В остальных случаях — удаление жёсткое.
+    - Если пользователь не участвовал нигде в системе — удаляется и **участник брокера**, и **пользователь**
+    - Если пользователь не участвовал в лотах текущего брокера, но участвовал у других — удаляется только **участник брокера**
+    - Если пользователь участвовал в лотах текущего брокера как участник, реферал или в транзакциях — применяется мягкое удаление (`deleted_at` в `broker_members`)
   tags:
     - "Members"
   parameters:
-    - name: userId
+    - name: brokerMemberId
       in: path
       required: true
       schema:

@@ -42,7 +42,9 @@ post:
   description: |
     Позволяет добавить участника брокера
     
-    Если пользователь с таким `email` уже существует, то привязывает его к списку участников конкретного брокера
+    Если пользователь с таким `email`:
+    - Уже существует, то привязывает его к списку участников конкретного брокера  
+    - Не найден в БД, то создает пользователя с `is_broker = false` и привязывает его к списку участников конкретного брокера
   tags:
     - "Members"
   security:
@@ -79,7 +81,7 @@ post:
                     type: string
                     example: "Участник успешно добавлен"
                   data:
-                    $ref: "../../openapi.yaml#/components/schemas/User"
+                    $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
                   error:
                     type: "null"
                   meta:

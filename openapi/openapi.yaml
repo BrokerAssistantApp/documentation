@@ -97,8 +97,8 @@ paths:
   /members:
     $ref: './paths/members/members.yaml'
 
-  /members/{userId}:
-    $ref: './paths/members/members.userId.yaml'
+  /members/{brokerMemberId}:
+    $ref: './paths/members/members.brokerMemberId.yaml'
 
   /lots:
     $ref: './paths/lots/lots.yaml'

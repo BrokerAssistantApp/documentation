@@ -2,10 +2,11 @@ get:
   summary: "Получить список лотов"
   description: |
     Возвращает список всех лотов:  
-    - `Для брокера`: созданных брокером + где брокер как инвестор/партнер
-    - `Для участника`: где участник как инвестор + где участник как партнер
-    
-    Позволяет фильтровать по статусу и искать по названию или номеру лота.
+    - **Если запрос с аккаунта брокера**:
+      - Не указан параметр `brokerMemberId` - созданных брокером + где брокер как инвестор/партнер
+      - Указан параметр `brokerMemberId` - конкретного участника, где участник как инвестор или партнер текущего брокера
+    - **Если запрос с аккаунта участника**: где участник как инвестор + где участник как партнер
+    Позволяет фильтровать по статусу.
   tags:
     - "Lots"
   parameters:
@@ -16,16 +17,12 @@ get:
         enum: [ all, purchased, renovation, hold, listed_for_sale, sold, closed ]
         default: all
       description: "Фильтрация по статусу лота"
-    - name: search
+    - name: brokerMemberId
       in: query
       schema:
         type: string
-      description: "Поиск по имени или номеру лота"
-    - name: isCreator
-      in: query
-      schema:
-        type: boolean
-      description: "Если true — возвращаются только лоты, которые брокер создал"
+        format: uuid
+      description: Используется только брокером для получения лотов конкретного участника
   responses:
     "200":
       description: "Список лотов"
@@ -89,21 +86,23 @@ post:
           properties:
             name:
               type: string
+            shareInputMode:
+              type: string
+              enum: [ percentage, amount ]
+              example: percentage
             purchasePrice:
               type: number
-              format: double
             salePrice:
               type: number
-              format: double
             brokerCommissionPercent:
               type: number
-              format: float
             brokerTaxPercent:
               type: number
-              format: float
             purchaseDate:
               type: string
               format: date-time
+            autoShareByInvestment:
+              type: boolean
   responses:
     "201":
       description: "Лот успешно создан"
@@ -118,11 +117,9 @@ post:
                     type: string
                     example: "Лот успешно создан"
                   data:
-                    type: object
-                    properties:
-                      lotId:
-                        type: string
-                        format: uuid
+                    type: array
+                    items:
+                      $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
                   error:
                     type: "null"
                   meta:
