@@ -26,9 +26,8 @@ LotTransaction:
       description: Тип транзакции
     amount:
       type: number
-      format: double
       description: Сумма транзакции
-      example: 100000.0
+      example: 100000.00
     updatedAt:
       type: string
       format: date-time

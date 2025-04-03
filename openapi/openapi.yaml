@@ -172,6 +172,8 @@ components:
       $ref: './components/schemas/LotMember.yaml#/LotMember'
     LotStatusHistory:
       $ref: './components/schemas/LotStatusHistory.yaml#/LotStatusHistory'
+    LotInvestment:
+      $ref: './components/schemas/LotInvestment.yaml#/LotInvestment'
     LotExpense:
       $ref: './components/schemas/LotExpense.yaml#/LotExpense'
     LotTransaction:

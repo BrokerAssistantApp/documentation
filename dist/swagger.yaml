@@ -719,9 +719,9 @@ paths:
                 shareInputMode:
                   type: string
                   enum:
-                    - percentage
+                    - percent
                     - amount
-                  example: percentage
+                  example: percent
                 purchasePrice:
                   type: number
                 salePrice:
@@ -749,9 +749,7 @@ paths:
                         type: string
                         example: Лот успешно создан
                       data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Lot'
+                        $ref: '#/components/schemas/Lot.WithoutStatus'
                       error:
                         type: 'null'
                       meta:
@@ -796,7 +794,7 @@ paths:
                         type: string
                         example: Информация о лоте
                       data:
-                        $ref: '#/components/schemas/Lot'
+                        $ref: '#/components/schemas/Lot.WithoutStatus'
                       error:
                         type: 'null'
                       meta:
@@ -883,7 +881,7 @@ paths:
                         type: string
                         example: Лот успешно обновлён
                       data:
-                        $ref: '#/components/schemas/Lot'
+                        $ref: '#/components/schemas/Lot.WithoutStatus'
                       error:
                         type: 'null'
                       meta:
@@ -1019,7 +1017,14 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: '#/components/schemas/LotMember'
+                          allOf:
+                            - $ref: '#/components/schemas/LotMember'
+                            - type: object
+                              properties:
+                                investments:
+                                  type: array
+                                  items:
+                                    $ref: '#/components/schemas/LotInvestment'
                       error:
                         type: 'null'
                       meta:
@@ -1087,10 +1092,18 @@ paths:
                   type: number
                   format: float
                   example: 20
+                shareAmount:
+                  type: number
+                  format: float
+                  example: 500000
                 referralFeePercent:
                   type: number
                   format: float
                   example: 5
+                referralFeeAmount:
+                  type: number
+                  format: float
+                  example: 5000
       responses:
         '201':
           description: Участник успешно добавлен в лот
@@ -1105,7 +1118,14 @@ paths:
                         type: string
                         example: Участник успешно добавлен в лот
                       data:
-                        $ref: '#/components/schemas/LotMember'
+                        allOf:
+                          - $ref: '#/components/schemas/LotMember'
+                          - type: object
+                            properties:
+                              investments:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/LotInvestment'
                       error:
                         type: 'null'
                       meta:
@@ -2242,38 +2262,35 @@ components:
           type: string
           format: uuid
           description: Уникальный идентификатор лота
-        brokerId:
-          type: string
-          format: uuid
-          description: Идентификатор брокера (ссылка на пользователя)
         name:
           type: string
           description: Название лота
           example: Земельный участок
         purchasePrice:
           type: number
-          format: double
           description: Цена покупки лота
           example: 1500000
         salePrice:
           type: number
-          format: double
           description: Цена продажи лота
           example: 3000000
         brokerCommissionPercent:
           type: number
-          format: float
           description: Процент комиссии брокера
           example: 25
         brokerTaxPercent:
           type: number
-          format: float
           description: Процент налога с брокера
           example: 7
         purchaseDate:
           type: string
           format: date
           description: Дата покупки лота
+        saleDate:
+          type: string
+          nullable: true
+          format: date
+          description: Дата продажи лота
         updatedAt:
           type: string
           format: date-time
@@ -2283,7 +2300,27 @@ components:
           format: date-time
           description: Время создания записи
     Lot.WithoutStatus:
-      $ref: '#/components/schemas/Lot'
+      allOf:
+        - $ref: '#/components/schemas/Lot'
+        - properties:
+            shareInputMode:
+              type: string
+              enum:
+                - percent
+                - amount
+              description: |
+                Режим ввода долей участников:
+
+                - `percent` — доли вводятся вручную в процентах (например, 25.00%);
+                - `amount` — доли вводятся в валютном эквиваленте (например, 500000 рублей).
+              example: percent
+            autoShareByInvestment:
+              type: boolean
+              description: |
+                Если установлен в `true`, доли участников рассчитываются автоматически 
+                на основе их вкладов (`investment`) относительно общей суммы всех инвестиций.
+                Работает только при `shareInputMode = "percent"`.
+              example: true
     Lot.WithStatus:
       allOf:
         - $ref: '#/components/schemas/Lot'
@@ -2302,30 +2339,56 @@ components:
     LotMember:
       type: object
       properties:
-        lotId:
-          type: string
-          format: uuid
-          description: Идентификатор лота
         memberId:
           type: string
           format: uuid
           nullable: true
           description: Идентификатор участника
+        name:
+          type: string
+          example: Иванов Пётр Васильевич
+          description: Имя пользователя
         referralMemberId:
           type: string
           format: uuid
           nullable: true
           description: Идентификатор реферального участника
+        referralMemberName:
+          type: string
+          example: Васильевич Пётр Иванович
+          description: Имя пользователя
         sharePercent:
           type: number
-          format: float
           description: Доля участника (%) в лоте
           example: 20
+        calculatedSharePercent:
+          type: number
+          description: Доля участника (%) в лоте (рассчитано системой)
+          example: 20
+        shareAmount:
+          type: number
+          description: Доля участника (сумма в ₽) в лоте
+          example: 200000
+        calculatedShareAmount:
+          type: number
+          description: Доля участника (сумма в ₽) в лоте (рассчитано системой)
+          example: 200000
         referralFeePercent:
           type: number
-          format: float
           description: Процент реферальной комиссии
           example: 5
+        calculatedReferralFeePercent:
+          type: number
+          description: Процент реферальной комиссии (рассчитано системой)
+          example: 5
+        referralFeeAmount:
+          type: number
+          description: Процент реферальной комиссии
+          example: 5000
+        calculatedReferralFeeAmount:
+          type: number
+          description: Процент реферальной комиссии (рассчитано системой)
+          example: 5000
     LotStatusHistory:
       type: object
       properties:
@@ -2347,6 +2410,24 @@ components:
           type: string
           format: date-time
           description: Дата создания записи
+    LotInvestment:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+          description: Идентификатор транзакции
+        amount:
+          type: number
+          description: Сумма транзакции
+          example: 100000
+        includeInShare:
+          type: boolean
+          description: Учитывается ли транзакция в расчете доли
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания
     LotExpense:
       type: object
       properties:
@@ -2360,7 +2441,6 @@ components:
           example: Покупка стройматериалов
         amount:
           type: number
-          format: double
           description: Сумма транзакции
           example: 100000
     LotTransaction:
@@ -2391,7 +2471,6 @@ components:
           description: Тип транзакции
         amount:
           type: number
-          format: double
           description: Сумма транзакции
           example: 100000
         updatedAt:
@@ -2432,39 +2511,30 @@ components:
           description: Идентификатор лота
         purchasePrice:
           type: number
-          format: double
           description: Цена покупки лота
         salePrice:
           type: number
-          format: double
           description: Цена продажи лота
         grossProfit:
           type: number
-          format: double
           description: Валовая прибыль
         netProfit:
           type: number
-          format: double
           description: Чистая прибыль
         brokerCommission:
           type: number
-          format: double
           description: Комиссия брокера
         brokerTax:
           type: number
-          format: double
           description: Налог брокера
         totalInvestments:
           type: number
-          format: double
           description: Общая сумма инвестиций
         totalPayouts:
           type: number
-          format: double
           description: Общая сумма выплат
         totalReferralFees:
           type: number
-          format: double
           description: Общая сумма реферальных вознаграждений
         createdAt:
           type: string

@@ -88,8 +88,10 @@ post:
               type: string
             shareInputMode:
               type: string
-              enum: [ percentage, amount ]
-              example: percentage
+              enum:
+                - percent
+                - amount
+              example: "percent"
             purchasePrice:
               type: number
             salePrice:
@@ -117,9 +119,7 @@ post:
                     type: string
                     example: "Лот успешно создан"
                   data:
-                    type: array
-                    items:
-                      $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
+                    $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
                   error:
                     type: "null"
                   meta:

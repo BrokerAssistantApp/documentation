@@ -1,27 +1,53 @@
 LotMember:
   type: object
   properties:
-    lotId:
-      type: string
-      format: uuid
-      description: Идентификатор лота
     memberId:
       type: string
       format: uuid
       nullable: true
       description: Идентификатор участника
+    name:
+      type: string
+      example: "Иванов Пётр Васильевич"
+      description: Имя пользователя
     referralMemberId:
       type: string
       format: uuid
       nullable: true
       description: Идентификатор реферального участника
+    referralMemberName:
+      type: string
+      example: "Васильевич Пётр Иванович"
+      description: Имя пользователя
     sharePercent:
       type: number
-      format: float
       description: Доля участника (%) в лоте
-      example: 20
+      example: 20.00
+    calculatedSharePercent:
+      type: number
+      description: Доля участника (%) в лоте (рассчитано системой)
+      example: 20.00
+    shareAmount:
+      type: number
+      description: Доля участника (сумма в ₽) в лоте
+      example: 200000.00
+    calculatedShareAmount:
+      type: number
+      description: Доля участника (сумма в ₽) в лоте (рассчитано системой)
+      example: 200000.00
     referralFeePercent:
       type: number
-      format: float
       description: Процент реферальной комиссии
-      example: 5
+      example: 5.00
+    calculatedReferralFeePercent:
+      type: number
+      description: Процент реферальной комиссии (рассчитано системой)
+      example: 5.00
+    referralFeeAmount:
+      type: number
+      description: Процент реферальной комиссии
+      example: 5000.00
+    calculatedReferralFeeAmount:
+      type: number
+      description: Процент реферальной комиссии (рассчитано системой)
+      example: 5000.00

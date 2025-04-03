@@ -5,38 +5,35 @@ Lot:
       type: string
       format: uuid
       description: Уникальный идентификатор лота
-    brokerId:
-      type: string
-      format: uuid
-      description: Идентификатор брокера (ссылка на пользователя)
     name:
       type: string
       description: Название лота
       example: "Земельный участок"
     purchasePrice:
       type: number
-      format: double
       description: Цена покупки лота
       example: 1500000.00
     salePrice:
       type: number
-      format: double
       description: Цена продажи лота
       example: 3000000.00
     brokerCommissionPercent:
       type: number
-      format: float
       description: Процент комиссии брокера
       example: 25.00
     brokerTaxPercent:
       type: number
-      format: float
       description: Процент налога с брокера
       example: 7.00
     purchaseDate:
       type: string
       format: date
       description: Дата покупки лота
+    saleDate:
+      type: string
+      nullable: true
+      format: date
+      description: Дата продажи лота
     updatedAt:
       type: string
       format: date-time
@@ -47,7 +44,27 @@ Lot:
       description: Время создания записи
 
 Lot.WithoutStatus:
-  $ref: "#/Lot"
+  allOf:
+    - $ref: "#/Lot"
+    - properties:
+        shareInputMode:
+          type: string
+          enum:
+            - percent
+            - amount
+          description: |
+            Режим ввода долей участников:
+
+            - `percent` — доли вводятся вручную в процентах (например, 25.00%);
+            - `amount` — доли вводятся в валютном эквиваленте (например, 500000 рублей).
+          example: "percent"
+        autoShareByInvestment:
+          type: boolean
+          description: |
+            Если установлен в `true`, доли участников рассчитываются автоматически 
+            на основе их вкладов (`investment`) относительно общей суммы всех инвестиций.
+            Работает только при `shareInputMode = "percent"`.
+          example: true
 
 Lot.WithStatus:
   allOf:

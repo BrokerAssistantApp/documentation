@@ -25,7 +25,14 @@ get:
                   data:
                     type: array
                     items:
-                      $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                      allOf:
+                        - $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                        - type: object
+                          properties:
+                            investments:
+                              type: array
+                              items:
+                                $ref: "../../openapi.yaml#/components/schemas/LotInvestment"
                   error:
                     type: "null"
                   meta:
@@ -93,10 +100,18 @@ post:
               type: number
               format: float
               example: 20.00
+            shareAmount:
+              type: number
+              format: float
+              example: 500000.00
             referralFeePercent:
               type: number
               format: float
               example: 5.00
+            referralFeeAmount:
+              type: number
+              format: float
+              example: 5000.00
   responses:
     "201":
       description: "Участник успешно добавлен в лот"
@@ -111,7 +126,14 @@ post:
                     type: string
                     example: "Участник успешно добавлен в лот"
                   data:
-                    $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                    allOf:
+                      - $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                      - type: object
+                        properties:
+                          investments:
+                            type: array
+                            items:
+                              $ref: "../../openapi.yaml#/components/schemas/LotInvestment"
                   error:
                     type: "null"
                   meta:

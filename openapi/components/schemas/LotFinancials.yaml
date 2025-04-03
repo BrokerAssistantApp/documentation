@@ -7,39 +7,30 @@ LotFinancials:
       description: Идентификатор лота
     purchasePrice:
       type: number
-      format: double
       description: Цена покупки лота
     salePrice:
       type: number
-      format: double
       description: Цена продажи лота
     grossProfit:
       type: number
-      format: double
       description: Валовая прибыль
     netProfit:
       type: number
-      format: double
       description: Чистая прибыль
     brokerCommission:
       type: number
-      format: double
       description: Комиссия брокера
     brokerTax:
       type: number
-      format: double
       description: Налог брокера
     totalInvestments:
       type: number
-      format: double
       description: Общая сумма инвестиций
     totalPayouts:
       type: number
-      format: double
       description: Общая сумма выплат
     totalReferralFees:
       type: number
-      format: double
       description: Общая сумма реферальных вознаграждений
     createdAt:
       type: string
