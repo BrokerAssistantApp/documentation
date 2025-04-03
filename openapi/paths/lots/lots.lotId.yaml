@@ -86,16 +86,12 @@ patch:
               type: string
             purchasePrice:
               type: number
-              format: float
             salePrice:
               type: number
-              format: float
             brokerCommissionPercent:
               type: number
-              format: float
             brokerTaxPercent:
               type: number
-              format: float
             purchaseDate:
               type: string
               format: date

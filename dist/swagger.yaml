@@ -854,16 +854,12 @@ paths:
                   type: string
                 purchasePrice:
                   type: number
-                  format: float
                 salePrice:
                   type: number
-                  format: float
                 brokerCommissionPercent:
                   type: number
-                  format: float
                 brokerTaxPercent:
                   type: number
-                  format: float
                 purchaseDate:
                   type: string
                   format: date
@@ -1062,7 +1058,7 @@ paths:
       description: |
         Позволяет добавить участника в лот
 
-        При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+        При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
       tags:
         - LotMembers
       parameters:
@@ -1078,8 +1074,6 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - memberId
               properties:
                 memberId:
                   type: string
@@ -1090,20 +1084,26 @@ paths:
                   nullable: true
                 sharePercent:
                   type: number
-                  format: float
                   example: 20
                 shareAmount:
                   type: number
-                  format: float
                   example: 500000
                 referralFeePercent:
                   type: number
-                  format: float
                   example: 5
                 referralFeeAmount:
                   type: number
-                  format: float
                   example: 5000
+                investments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                        example: 100000
+                      includeInShare:
+                        type: boolean
       responses:
         '201':
           description: Участник успешно добавлен в лот
@@ -1170,7 +1170,7 @@ paths:
       description: |
         Позволяет изменить долю участия и реферальную комиссию участника в лоте.
 
-        При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+        При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
 
         Обновление невозможно, если лот находится в статусе `sold` или `closed`
       tags:
@@ -1195,21 +1195,41 @@ paths:
             schema:
               type: object
               properties:
-                sharePercent:
-                  type: number
-                  format: float
-                  description: Новая доля участия (%)
-                  example: 20
+                memberId:
+                  type: string
+                  format: uuid
                 referralMemberId:
                   type: string
                   format: uuid
                   nullable: true
-                  description: 'UUID участника, за которого получит реферальную комиссию'
+                sharePercent:
+                  type: number
+                  example: 20
+                shareAmount:
+                  type: number
+                  example: 500000
                 referralFeePercent:
                   type: number
-                  format: float
-                  description: Новый процент реферальной комиссии
                   example: 5
+                referralFeeAmount:
+                  type: number
+                  example: 5000
+                investments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      transactionId:
+                        type: string
+                        format: uuid
+                        description: Идентификатор транзакции
+                      amount:
+                        type: number
+                        description: Сумма транзакции
+                        example: 100000
+                      includeInShare:
+                        type: boolean
+                        description: Учитывается ли транзакция в расчете доли
       responses:
         '200':
           description: Участник лота успешно обновлён
@@ -1224,7 +1244,14 @@ paths:
                         type: string
                         example: Участник лота успешно обновлён
                       data:
-                        $ref: '#/components/schemas/LotMember'
+                        allOf:
+                          - $ref: '#/components/schemas/LotMember'
+                          - type: object
+                            properties:
+                              investments:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/LotInvestment'
                       error:
                         type: 'null'
                       meta:
@@ -1651,8 +1678,9 @@ paths:
                   example: Покупка стройматериалов
                 amount:
                   type: number
-                  format: double
                   example: 100000
+                includeInCost:
+                  type: boolean
       responses:
         '201':
           description: Расход добавлен
@@ -1742,8 +1770,9 @@ paths:
                   example: Покупка стройматериалов
                 amount:
                   type: number
-                  format: double
                   example: 100000
+                includeInCost:
+                  type: boolean
       responses:
         '200':
           description: Расход обновлён
@@ -2358,7 +2387,10 @@ components:
           example: Васильевич Пётр Иванович
           description: Имя пользователя
         sharePercent:
-          type: number
+          type:
+            - number
+            - 'null'
+          nullable: true
           description: Доля участника (%) в лоте
           example: 20
         calculatedSharePercent:
@@ -2366,7 +2398,10 @@ components:
           description: Доля участника (%) в лоте (рассчитано системой)
           example: 20
         shareAmount:
-          type: number
+          type:
+            - number
+            - 'null'
+          nullable: true
           description: Доля участника (сумма в ₽) в лоте
           example: 200000
         calculatedShareAmount:
@@ -2374,7 +2409,10 @@ components:
           description: Доля участника (сумма в ₽) в лоте (рассчитано системой)
           example: 200000
         referralFeePercent:
-          type: number
+          type:
+            - number
+            - 'null'
+          nullable: true
           description: Процент реферальной комиссии
           example: 5
         calculatedReferralFeePercent:
@@ -2382,7 +2420,10 @@ components:
           description: Процент реферальной комиссии (рассчитано системой)
           example: 5
         referralFeeAmount:
-          type: number
+          type:
+            - number
+            - 'null'
+          nullable: true
           description: Процент реферальной комиссии
           example: 5000
         calculatedReferralFeeAmount:
@@ -2443,6 +2484,9 @@ components:
           type: number
           description: Сумма транзакции
           example: 100000
+        includeInCost:
+          type: boolean
+          description: Учитывается ли расход в себестоимости лота
     LotTransaction:
       type: object
       properties:
@@ -2486,7 +2530,6 @@ components:
       properties:
         total:
           type: number
-          format: double
           example: 1000000
         transactions:
           type: array
@@ -2497,7 +2540,6 @@ components:
                 properties:
                   amount:
                     type: number
-                    format: double
                     example: 1000000
                   type:
                     type: string

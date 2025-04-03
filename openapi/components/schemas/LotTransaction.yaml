@@ -42,7 +42,6 @@ LotTransactionGroup:
   properties:
     total:
       type: number
-      format: double
       example: 1000000.00
     transactions:
       type: array
@@ -53,7 +52,6 @@ LotTransactionGroup:
             properties:
               amount:
                 type: number
-                format: double
                 example: 1000000.00
               type:
                 type: string

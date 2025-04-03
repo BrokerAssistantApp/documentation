@@ -3,7 +3,7 @@ patch:
   description: |
     Позволяет изменить долю участия и реферальную комиссию участника в лоте.
     
-    При передаче параметра `referralFeePercent` обязательно должен быть передан параметр `referralMemberId`.
+    При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
     
     Обновление невозможно, если лот находится в статусе `sold` или `closed`
   tags:
@@ -28,21 +28,41 @@ patch:
         schema:
           type: object
           properties:
-            sharePercent:
-              type: number
-              format: float
-              description: "Новая доля участия (%)"
-              example: 20.00
+            memberId:
+              type: string
+              format: uuid
             referralMemberId:
               type: string
               format: uuid
               nullable: true
-              description: "UUID участника, за которого получит реферальную комиссию"
+            sharePercent:
+              type: number
+              example: 20.00
+            shareAmount:
+              type: number
+              example: 500000.00
             referralFeePercent:
               type: number
-              format: float
-              description: "Новый процент реферальной комиссии"
               example: 5.00
+            referralFeeAmount:
+              type: number
+              example: 5000.00
+            investments:
+              type: array
+              items:
+                type: object
+                properties:
+                  transactionId:
+                    type: string
+                    format: uuid
+                    description: Идентификатор транзакции
+                  amount:
+                    type: number
+                    description: Сумма транзакции
+                    example: 100000.00
+                  includeInShare:
+                    type: boolean
+                    description: Учитывается ли транзакция в расчете доли
   responses:
     "200":
       description: "Участник лота успешно обновлён"
@@ -57,7 +77,14 @@ patch:
                     type: string
                     example: "Участник лота успешно обновлён"
                   data:
-                    $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                    allOf:
+                      - $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                      - type: object
+                        properties:
+                          investments:
+                            type: array
+                            items:
+                              $ref: "../../openapi.yaml#/components/schemas/LotInvestment"
                   error:
                     type: "null"
                   meta:

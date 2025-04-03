@@ -29,8 +29,9 @@ patch:
               example: "Покупка стройматериалов"
             amount:
               type: number
-              format: double
               example: 100000.00
+            includeInCost:
+              type: boolean
   responses:
     "200":
       description: "Расход обновлён"

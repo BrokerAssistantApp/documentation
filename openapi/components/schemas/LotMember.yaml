@@ -20,7 +20,8 @@ LotMember:
       example: "Васильевич Пётр Иванович"
       description: Имя пользователя
     sharePercent:
-      type: number
+      type: [number, "null"]
+      nullable: true
       description: Доля участника (%) в лоте
       example: 20.00
     calculatedSharePercent:
@@ -28,7 +29,8 @@ LotMember:
       description: Доля участника (%) в лоте (рассчитано системой)
       example: 20.00
     shareAmount:
-      type: number
+      type: [number, "null"]
+      nullable: true
       description: Доля участника (сумма в ₽) в лоте
       example: 200000.00
     calculatedShareAmount:
@@ -36,7 +38,8 @@ LotMember:
       description: Доля участника (сумма в ₽) в лоте (рассчитано системой)
       example: 200000.00
     referralFeePercent:
-      type: number
+      type: [number, "null"]
+      nullable: true
       description: Процент реферальной комиссии
       example: 5.00
     calculatedReferralFeePercent:
@@ -44,7 +47,8 @@ LotMember:
       description: Процент реферальной комиссии (рассчитано системой)
       example: 5.00
     referralFeeAmount:
-      type: number
+      type: [number, "null"]
+      nullable: true
       description: Процент реферальной комиссии
       example: 5000.00
     calculatedReferralFeeAmount:

@@ -13,3 +13,6 @@ LotExpense:
       type: number
       description: Сумма транзакции
       example: 100000.00
+    includeInCost:
+      type: boolean
+      description: Учитывается ли расход в себестоимости лота

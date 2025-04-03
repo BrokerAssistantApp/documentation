@@ -84,8 +84,9 @@ post:
               example: "Покупка стройматериалов"
             amount:
               type: number
-              format: double
               example: 100000.00
+            includeInCost:
+              type: boolean
   responses:
     "201":
       description: "Расход добавлен"
