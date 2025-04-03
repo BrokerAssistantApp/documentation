@@ -39,7 +39,7 @@ get:
                   data:
                     type: array
                     items:
-                      $ref: "../../openapi.yaml#/components/schemas/Lot.WithStatus"
+                      $ref: "../../openapi.yaml#/components/schemas/Lot"
                   error:
                     type: "null"
                   meta:
@@ -94,12 +94,16 @@ post:
               example: "percent"
             purchasePrice:
               type: number
+              example: 1500000
             salePrice:
               type: number
+              example: 3000000
             brokerCommissionPercent:
               type: number
+              example: 25
             brokerTaxPercent:
               type: number
+              example: 7
             purchaseDate:
               type: string
               format: date-time
@@ -119,7 +123,7 @@ post:
                     type: string
                     example: "Лот успешно создан"
                   data:
-                    $ref: "../../openapi.yaml#/components/schemas/Lot.WithoutStatus"
+                    $ref: "../../openapi.yaml#/components/schemas/Lot.Details"
                   error:
                     type: "null"
                   meta:

@@ -1,0 +1,23 @@
+LotSalePriceHistory:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Уникальный идентификатор записи истории статуса лота
+    reason:
+      type: number
+      example: Сделали ремонт, цена на рынке увеличилась
+      description: Заметка о причине изменения цены
+    oldPrice:
+      type: number
+      example: 1500000
+      description: Старая цена продажи
+    newPrice:
+      type: number
+      example: 2000000
+      description: Новая цена продажи
+    createdAt:
+      type: string
+      format: date-time
+      description: Дата создания записи

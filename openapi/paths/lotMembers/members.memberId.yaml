@@ -28,9 +28,6 @@ patch:
         schema:
           type: object
           properties:
-            memberId:
-              type: string
-              format: uuid
             referralMemberId:
               type: string
               format: uuid

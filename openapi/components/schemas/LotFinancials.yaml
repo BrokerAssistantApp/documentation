@@ -7,31 +7,60 @@ LotFinancials:
       description: Идентификатор лота
     purchasePrice:
       type: number
+      example: 1500000
       description: Цена покупки лота
+    totalExpensesInCost:
+      type: number
+      example: 300000
+      description: Сумма расходов, учтённых в себестоимости
+    totalCost:
+      type: number
+      example: 1800000
+      description: Общая себестоимость лота (покупка + расходы)
     salePrice:
       type: number
+      example: 2500000
       description: Цена продажи лота
     grossProfit:
       type: number
-      description: Валовая прибыль
-    netProfit:
-      type: number
-      description: Чистая прибыль
+      example: 700000
+      description: Валовая прибыль (продажа − себестоимость)
     brokerCommission:
       type: number
-      description: Комиссия брокера
+      example: 120000
+      description: Сумма комиссии брокера
     brokerTax:
       type: number
-      description: Налог брокера
-    totalInvestments:
-      type: number
-      description: Общая сумма инвестиций
-    totalPayouts:
-      type: number
-      description: Общая сумма выплат
+      example: 50000
+      description: Налог, уплачиваемый брокером с общей суммы дохода от продажи лота
     totalReferralFees:
       type: number
-      description: Общая сумма реферальных вознаграждений
+      example: 80000
+      description: Сумма всех реферальных выплат
+    netProfit:
+      type: number
+      example: 450000
+      description: Чистая прибыль после всех удержаний
+    totalInvestments:
+      type: number
+      example: 1000000
+      description: Сумма всех инвестиций, участвующих в долях
+    totalInvestmentsExcluded:
+      type: number
+      example: 200000
+      description: Сумма инвестиций, не участвующих в долях
+    totalPayouts:
+      type: number
+      example: 1500000
+      description: Общая сумма выплат участникам
+    netPayouts:
+      type: number
+      example: 1300000
+      description: Выплаты без учёта инвестиций
+    payoutsMinusInvestments:
+      type: number
+      example: 500000
+      description: Разница между выплатами и инвестициями
     createdAt:
       type: string
       format: date-time

@@ -5,6 +5,17 @@ Lot:
       type: string
       format: uuid
       description: Уникальный идентификатор лота
+    status:
+      type: string
+      enum:
+        - purchased
+        - renovation
+        - hold
+        - listed_for_sale
+        - sold
+        - closed
+      description: Статус лота
+      example: "purchased"
     name:
       type: string
       description: Название лота
@@ -43,7 +54,7 @@ Lot:
       format: date-time
       description: Время создания записи
 
-Lot.WithoutStatus:
+Lot.Details:
   allOf:
     - $ref: "#/Lot"
     - properties:
@@ -65,19 +76,3 @@ Lot.WithoutStatus:
             на основе их вкладов (`investment`) относительно общей суммы всех инвестиций.
             Работает только при `shareInputMode = "percent"`.
           example: true
-
-Lot.WithStatus:
-  allOf:
-    - $ref: "#/Lot"
-    - properties:
-        status:
-          type: string
-          enum:
-            - purchased
-            - renovation
-            - hold
-            - listed_for_sale
-            - sold
-            - closed
-          description: Статус лота
-          example: "purchased"

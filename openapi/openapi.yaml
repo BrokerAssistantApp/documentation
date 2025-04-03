@@ -30,10 +30,12 @@ tags:
     description: "Методы управления участниками"
   - name: "Lots"
     description: "Методы управления лотами"
-  - name: "LotMembers"
-    description: "Управление участниками лотов"
+  - name: "LotSalePrice"
+    description: "Методы управления ценой продажи"
   - name: "LotStatus"
     description: "Методы управления статусами лотов"
+  - name: "LotMembers"
+    description: "Управление участниками лотов"
   - name: "Expenses"
     description: "Учет расходов"
   - name: "Transactions"
@@ -106,17 +108,23 @@ paths:
   /lots/{lotId}:
     $ref: './paths/lots/lots.lotId.yaml'
 
-  /lots/{lotId}/members:
-    $ref: './paths/lotMembers/members.yaml'
+  /lots/{lotId}/sale-price:
+    $ref: './paths/lotSalePrice/sale-price.yaml'
 
-  /lots/{lotId}/members/{memberId}:
-    $ref: './paths/lotMembers/members.memberId.yaml'
+  /lots/{lotId}/sale-price-history:
+    $ref: './paths/lotSalePrice/sale-price-history.yaml'
 
   /lots/{lotId}/status:
     $ref: './paths/lotStatus/status.yaml'
 
   /lots/{lotId}/status-history:
     $ref: './paths/lotStatus/status-history.yaml'
+
+  /lots/{lotId}/members:
+    $ref: './paths/lotMembers/members.yaml'
+
+  /lots/{lotId}/members/{memberId}:
+    $ref: './paths/lotMembers/members.memberId.yaml'
 
   /lots/{lotId}/expenses:
     $ref: './paths/expenses/expenses.yaml'
@@ -152,6 +160,8 @@ components:
       $ref: './components/schemas/ForbiddenErrorResponse.yaml#/ForbiddenErrorResponse'
     NotFoundErrorResponse:
       $ref: './components/schemas/NotFoundErrorResponse.yaml#/NotFoundErrorResponse'
+    ConflictErrorResponse:
+      $ref: './components/schemas/ConflictErrorResponse.yaml#/ConflictErrorResponse'
     Error:
       $ref: './components/schemas/Error.yaml#/Error'
     Meta:
@@ -164,14 +174,14 @@ components:
       $ref: './components/schemas/User.yaml#/User.WithoutIsBroker'
     Lot:
       $ref: './components/schemas/Lot.yaml#/Lot'
-    Lot.WithoutStatus:
-      $ref: './components/schemas/Lot.yaml#/Lot.WithoutStatus'
-    Lot.WithStatus:
-      $ref: './components/schemas/Lot.yaml#/Lot.WithStatus'
-    LotMember:
-      $ref: './components/schemas/LotMember.yaml#/LotMember'
+    Lot.Details:
+      $ref: './components/schemas/Lot.yaml#/Lot.Details'
+    LotSalePriceHistory:
+      $ref: './components/schemas/LotSalePriceHistory.yaml#/LotSalePriceHistory'
     LotStatusHistory:
       $ref: './components/schemas/LotStatusHistory.yaml#/LotStatusHistory'
+    LotMember:
+      $ref: './components/schemas/LotMember.yaml#/LotMember'
     LotInvestment:
       $ref: './components/schemas/LotInvestment.yaml#/LotInvestment'
     LotExpense:

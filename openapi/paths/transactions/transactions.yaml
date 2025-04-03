@@ -49,17 +49,17 @@ get:
                   data:
                     type: object
                     properties:
-                      investment:
+                      investments:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
-                      payout:
+                      payouts:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
-                      broker_commission:
+                      brokerCommission:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
-                      broker_tax:
+                      brokerTax:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
-                      referral_fee:
+                      referralFees:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
-                      expense:
+                      expenses:
                         $ref: "../../openapi.yaml#/components/schemas/LotTransactionGroup"
                   error:
                     type: "null"

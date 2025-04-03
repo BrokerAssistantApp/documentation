@@ -1,13 +1,8 @@
 post:
-  summary: "Обновить статус лота"
-  description: |
-    - Статус нельзя изменить после `sold` или `closed`.
-    - Откат возможен только между «мягкими» статусами: `renovation`, `hold`, `listed_for_sale`.
-    - Возврат к `purchased` невозможен после его смены.
-    - При установке статуса `sold` обязательно передаются `salePrice` и `saleDate` — они фиксируют итоговую стоимость и дату продажи.
-    - При других статусах `salePrice` и `saleDate` игнорируются и не возвращаются в ответе.
+  summary: "Обновить цену продажи лота"
+  description: "Обновление цены продажи невозможно после статуса `sold` или `closed`"
   tags:
-    - "LotStatus"
+    - "LotSalePrice"
   parameters:
     - name: lotId
       in: path
@@ -23,28 +18,18 @@ post:
         schema:
           type: object
           properties:
-            status:
-              type: string
-              enum:
-                - purchased
-                - renovation
-                - hold
-                - listed_for_sale
-                - sold
-                - closed
-              example: sold
+            reason:
+              type: number
+              example: Сделали ремонт, цена на рынке увеличилась
             salePrice:
               type: number
               example: 1500000
-            saleDate:
-              type: string
-              format: date
             updatedAt:
               type: string
               format: date-time
   responses:
     "200":
-      description: "Статус лота успешно обновлён"
+      description: "Цена продажи лота успешно обновлёна"
       content:
         application/json:
           schema:
@@ -54,19 +39,13 @@ post:
                 properties:
                   message:
                     type: string
-                    example: "Статус лота успешно обновлён"
+                    example: "Цена продажи лота успешно обновлёна"
                   data:
                     type: object
                     properties:
-                      status:
-                        type: string
-                        example: "sold"
                       salePrice:
                         type: number
                         example: 1500000
-                      saleDate:
-                        type: string
-                        format: date
                       updatedAt:
                         type: string
                         format: date-time
