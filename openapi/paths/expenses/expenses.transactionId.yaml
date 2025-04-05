@@ -129,7 +129,14 @@ delete:
                     type: string
                     example: "Расход успешно удалён"
                   data:
-                    type: "null"
+                    type: object
+                    properties:
+                      totalAmount:
+                        type: number
+                        example: 100000
+                      includedInCostAmount:
+                        type: number
+                        example: 100000
                   error:
                     type: "null"
                   meta:

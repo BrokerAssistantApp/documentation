@@ -23,16 +23,17 @@ get:
                     type: string
                     example: "Список расходов по лоту"
                   data:
-                    type: array
-                    items:
-                      properties:
-                        totalAmount:
-                          type: number
-                          example: 100000
-                        includedInCostAmount:
-                          type: number
-                          example: 100000
-                        expenses:
+                    type: object
+                    properties:
+                      totalAmount:
+                        type: number
+                        example: 100000
+                      includedInCostAmount:
+                        type: number
+                        example: 100000
+                      expenses:
+                        type: array
+                        items:
                           $ref: "../../openapi.yaml#/components/schemas/LotExpense"
                   error:
                     type: "null"

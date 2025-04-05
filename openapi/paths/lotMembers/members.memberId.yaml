@@ -74,14 +74,25 @@ patch:
                     type: string
                     example: "Участник лота успешно обновлён"
                   data:
-                    allOf:
-                      - $ref: "../../openapi.yaml#/components/schemas/LotMember"
-                      - type: object
-                        properties:
-                          investments:
-                            type: array
-                            items:
-                              $ref: "../../openapi.yaml#/components/schemas/LotInvestment"
+                    type: object
+                    properties:
+                      totalInvestments:
+                        type: number
+                        example: 100000
+                      investmentsIncludedInShare:
+                        type: number
+                        example: 100000
+                      member:
+                        allOf:
+                          - $ref: "../../openapi.yaml#/components/schemas/LotMember"
+                          - type: object
+                            properties:
+                              totalInvestments:
+                                type: number
+                                example: 100000
+                              investmentsIncludedInShare:
+                                type: number
+                                example: 100000
                   error:
                     type: "null"
                   meta:
@@ -162,7 +173,14 @@ delete:
                     type: string
                     example: "Участник успешно удалён"
                   data:
-                    type: "null"
+                    type: object
+                    properties:
+                      totalInvestments:
+                        type: number
+                        example: 100000
+                      investmentsIncludedInShare:
+                        type: number
+                        example: 100000
                   error:
                     type: "null"
                   meta:

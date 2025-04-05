@@ -47,3 +47,7 @@ LotMember:
       type: number
       description: Процент реферальной комиссии (рассчитано системой)
       example: 5000.00
+    investments:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/LotInvestment"

@@ -1384,16 +1384,27 @@ paths:
                         type: string
                         example: Список участников лота
                       data:
-                        type: array
-                        items:
-                          allOf:
-                            - $ref: '#/components/schemas/LotMember'
-                            - type: object
-                              properties:
-                                investments:
-                                  type: array
-                                  items:
-                                    $ref: '#/components/schemas/LotInvestment'
+                        type: object
+                        properties:
+                          totalInvestments:
+                            type: number
+                            example: 100000
+                          investmentsIncludedInShare:
+                            type: number
+                            example: 100000
+                          members:
+                            type: array
+                            items:
+                              allOf:
+                                - $ref: '#/components/schemas/LotMember'
+                                - type: object
+                                  properties:
+                                    totalInvestments:
+                                      type: number
+                                      example: 100000
+                                    investmentsIncludedInShare:
+                                      type: number
+                                      example: 100000
                       error:
                         type: 'null'
                       meta:
@@ -1491,14 +1502,25 @@ paths:
                         type: string
                         example: Участник успешно добавлен в лот
                       data:
-                        allOf:
-                          - $ref: '#/components/schemas/LotMember'
-                          - type: object
-                            properties:
-                              investments:
-                                type: array
-                                items:
-                                  $ref: '#/components/schemas/LotInvestment'
+                        type: object
+                        properties:
+                          totalInvestments:
+                            type: number
+                            example: 100000
+                          investmentsIncludedInShare:
+                            type: number
+                            example: 100000
+                          member:
+                            allOf:
+                              - $ref: '#/components/schemas/LotMember'
+                              - type: object
+                                properties:
+                                  totalInvestments:
+                                    type: number
+                                    example: 100000
+                                  investmentsIncludedInShare:
+                                    type: number
+                                    example: 100000
                       error:
                         type: 'null'
                       meta:
@@ -1614,14 +1636,25 @@ paths:
                         type: string
                         example: Участник лота успешно обновлён
                       data:
-                        allOf:
-                          - $ref: '#/components/schemas/LotMember'
-                          - type: object
-                            properties:
-                              investments:
-                                type: array
-                                items:
-                                  $ref: '#/components/schemas/LotInvestment'
+                        type: object
+                        properties:
+                          totalInvestments:
+                            type: number
+                            example: 100000
+                          investmentsIncludedInShare:
+                            type: number
+                            example: 100000
+                          member:
+                            allOf:
+                              - $ref: '#/components/schemas/LotMember'
+                              - type: object
+                                properties:
+                                  totalInvestments:
+                                    type: number
+                                    example: 100000
+                                  investmentsIncludedInShare:
+                                    type: number
+                                    example: 100000
                       error:
                         type: 'null'
                       meta:
@@ -1701,7 +1734,14 @@ paths:
                         type: string
                         example: Участник успешно удалён
                       data:
-                        type: 'null'
+                        type: object
+                        properties:
+                          totalInvestments:
+                            type: number
+                            example: 100000
+                          investmentsIncludedInShare:
+                            type: number
+                            example: 100000
                       error:
                         type: 'null'
                       meta:
@@ -1760,16 +1800,17 @@ paths:
                         type: string
                         example: Список расходов по лоту
                       data:
-                        type: array
-                        items:
-                          properties:
-                            totalAmount:
-                              type: number
-                              example: 100000
-                            includedInCostAmount:
-                              type: number
-                              example: 100000
-                            expenses:
+                        type: object
+                        properties:
+                          totalAmount:
+                            type: number
+                            example: 100000
+                          includedInCostAmount:
+                            type: number
+                            example: 100000
+                          expenses:
+                            type: array
+                            items:
                               $ref: '#/components/schemas/LotExpense'
                       error:
                         type: 'null'
@@ -2030,7 +2071,14 @@ paths:
                         type: string
                         example: Расход успешно удалён
                       data:
-                        type: 'null'
+                        type: object
+                        properties:
+                          totalAmount:
+                            type: number
+                            example: 100000
+                          includedInCostAmount:
+                            type: number
+                            example: 100000
                       error:
                         type: 'null'
                       meta:
@@ -2667,6 +2715,10 @@ components:
           type: number
           description: Процент реферальной комиссии (рассчитано системой)
           example: 5000
+        investments:
+          type: array
+          items:
+            $ref: '#/components/schemas/LotInvestment'
     LotInvestment:
       type: object
       properties:
