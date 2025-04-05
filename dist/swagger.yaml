@@ -443,7 +443,7 @@ paths:
                     properties:
                       message:
                         type: string
-                        example: Участник найден
+                        example: Информация об участнике брокера
                       data:
                         $ref: '#/components/schemas/User'
                       error:
@@ -1543,7 +1543,7 @@ paths:
       description: |
         Позволяет изменить долю участия и реферальную комиссию участника в лоте.
 
-        При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
+        При передаче параметра `referralFeePercent` или `referralFeeAmount` должен быть передан параметр `referralMemberId`, иначе они игнорируются.
 
         Обновление невозможно, если лот находится в статусе `sold` или `closed`
       tags:
@@ -1762,7 +1762,15 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: '#/components/schemas/LotExpense'
+                          properties:
+                            totalAmount:
+                              type: number
+                              example: 100000
+                            includedInCostAmount:
+                              type: number
+                              example: 100000
+                            expenses:
+                              $ref: '#/components/schemas/LotExpense'
                       error:
                         type: 'null'
                       meta:
@@ -1839,7 +1847,16 @@ paths:
                         type: string
                         example: Расход добавлен
                       data:
-                        $ref: '#/components/schemas/LotExpense'
+                        type: object
+                        properties:
+                          totalAmount:
+                            type: number
+                            example: 100000
+                          includedInCostAmount:
+                            type: number
+                            example: 100000
+                          expense:
+                            $ref: '#/components/schemas/LotExpense'
                       error:
                         type: 'null'
                       meta:
@@ -1931,7 +1948,16 @@ paths:
                         type: string
                         example: Расход обновлён
                       data:
-                        $ref: '#/components/schemas/LotExpense'
+                        type: object
+                        properties:
+                          totalAmount:
+                            type: number
+                            example: 100000
+                          includedInCostAmount:
+                            type: number
+                            example: 100000
+                          expense:
+                            $ref: '#/components/schemas/LotExpense'
                       error:
                         type: 'null'
                       meta:
@@ -2504,10 +2530,6 @@ components:
           nullable: true
           format: date
           description: Дата продажи лота
-        updatedAt:
-          type: string
-          format: date-time
-          description: Время последнего обновления записи
         createdAt:
           type: string
           format: date-time
@@ -2534,6 +2556,16 @@ components:
                 на основе их вкладов (`investment`) относительно общей суммы всех инвестиций.
                 Работает только при `shareInputMode = "percent"`.
               example: true
+            hasStatusHistory:
+              type: boolean
+              description: Признак наличия истории смены статуса
+            hasSalePriceHistory:
+              type: boolean
+              description: Признак наличия истории изменения цены продажи
+            updatedAt:
+              type: string
+              format: date-time
+              description: Время последнего обновления записи
     LotSalePriceHistory:
       type: object
       properties:
@@ -2586,19 +2618,11 @@ components:
           format: uuid
           nullable: true
           description: Идентификатор участника
-        name:
-          type: string
-          example: Иванов Пётр Васильевич
-          description: Имя пользователя
         referralMemberId:
           type: string
           format: uuid
           nullable: true
           description: Идентификатор реферального участника
-        referralMemberName:
-          type: string
-          example: Васильевич Пётр Иванович
-          description: Имя пользователя
         sharePercent:
           type:
             - number

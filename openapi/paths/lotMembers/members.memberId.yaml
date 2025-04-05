@@ -3,7 +3,7 @@ patch:
   description: |
     Позволяет изменить долю участия и реферальную комиссию участника в лоте.
     
-    При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
+    При передаче параметра `referralFeePercent` или `referralFeeAmount` должен быть передан параметр `referralMemberId`, иначе они игнорируются.
     
     Обновление невозможно, если лот находится в статусе `sold` или `closed`
   tags:

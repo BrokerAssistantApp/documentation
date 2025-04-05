@@ -45,10 +45,6 @@ Lot:
       nullable: true
       format: date
       description: Дата продажи лота
-    updatedAt:
-      type: string
-      format: date-time
-      description: Время последнего обновления записи
     createdAt:
       type: string
       format: date-time
@@ -76,3 +72,13 @@ Lot.Details:
             на основе их вкладов (`investment`) относительно общей суммы всех инвестиций.
             Работает только при `shareInputMode = "percent"`.
           example: true
+        hasStatusHistory:
+          type: boolean
+          description: Признак наличия истории смены статуса
+        hasSalePriceHistory:
+          type: boolean
+          description: Признак наличия истории изменения цены продажи
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи

@@ -46,7 +46,16 @@ patch:
                     type: string
                     example: "Расход обновлён"
                   data:
-                    $ref: "../../openapi.yaml#/components/schemas/LotExpense"
+                    type: object
+                    properties:
+                      totalAmount:
+                        type: number
+                        example: 100000
+                      includedInCostAmount:
+                        type: number
+                        example: 100000
+                      expense:
+                        $ref: "../../openapi.yaml#/components/schemas/LotExpense"
                   error:
                     type: "null"
                   meta:

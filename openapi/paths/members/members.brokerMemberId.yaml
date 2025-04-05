@@ -22,7 +22,7 @@ get:
                 properties:
                   message:
                     type: string
-                    example: "Участник найден"
+                    example: "Информация об участнике брокера"
                   data:
                     $ref: "../../openapi.yaml#/components/schemas/User.WithoutIsBroker"
                   error:

@@ -6,19 +6,11 @@ LotMember:
       format: uuid
       nullable: true
       description: Идентификатор участника
-    name:
-      type: string
-      example: "Иванов Пётр Васильевич"
-      description: Имя пользователя
     referralMemberId:
       type: string
       format: uuid
       nullable: true
       description: Идентификатор реферального участника
-    referralMemberName:
-      type: string
-      example: "Васильевич Пётр Иванович"
-      description: Имя пользователя
     sharePercent:
       type: [number, "null"]
       nullable: true
