@@ -11,6 +11,12 @@ LotMember:
       format: uuid
       nullable: true
       description: Идентификатор реферального участника
+    referralFeePayer:
+      type: string
+      enum:
+        - member
+        - broker
+      description: Кто оплачивает реферальное вознаграждение участнику, который привел инвестора
     sharePercent:
       type: [number, "null"]
       nullable: true

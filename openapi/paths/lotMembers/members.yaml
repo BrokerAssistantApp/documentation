@@ -106,6 +106,12 @@ post:
               type: string
               format: uuid
               nullable: true
+            referralFeePayer:
+              type: string
+              enum:
+                - member
+                - broker
+              example: "member"
             sharePercent:
               type: number
               example: 20.00

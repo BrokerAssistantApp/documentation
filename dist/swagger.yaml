@@ -1466,6 +1466,12 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                referralFeePayer:
+                  type: string
+                  enum:
+                    - member
+                    - broker
+                  example: member
                 sharePercent:
                   type: number
                   example: 20
@@ -1594,6 +1600,12 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                referralFeePayer:
+                  type: string
+                  enum:
+                    - member
+                    - broker
+                  example: member
                 sharePercent:
                   type: number
                   example: 20
@@ -2671,6 +2683,12 @@ components:
           format: uuid
           nullable: true
           description: Идентификатор реферального участника
+        referralFeePayer:
+          type: string
+          enum:
+            - member
+            - broker
+          description: 'Кто оплачивает реферальное вознаграждение участнику, который привел инвестора'
         sharePercent:
           type:
             - number
