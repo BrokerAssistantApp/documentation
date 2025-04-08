@@ -6,11 +6,11 @@ LotMember:
       format: uuid
       nullable: true
       description: Идентификатор участника
-    referralMemberId:
+    referrerMemberId:
       type: string
       format: uuid
       nullable: true
-      description: Идентификатор реферального участника
+      description: Идентификатор участника который пригласил реферального участника
     referralFeePayer:
       type: string
       enum:

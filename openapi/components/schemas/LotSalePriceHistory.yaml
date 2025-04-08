@@ -6,7 +6,7 @@ LotSalePriceHistory:
       format: uuid
       description: Уникальный идентификатор записи истории статуса лота
     reason:
-      type: number
+      type: string
       example: Сделали ремонт, цена на рынке увеличилась
       description: Заметка о причине изменения цены
     oldPrice:

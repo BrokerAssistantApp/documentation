@@ -19,7 +19,7 @@ post:
           type: object
           properties:
             reason:
-              type: number
+              type: string
               example: Сделали ремонт, цена на рынке увеличилась
             salePrice:
               type: number

@@ -82,7 +82,7 @@ post:
   description: |
     Позволяет добавить участника в лот
     
-    При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
+    При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referrerMemberId`.
   tags:
     - "LotMembers"
   parameters:
@@ -102,7 +102,7 @@ post:
             memberId:
               type: string
               format: uuid
-            referralMemberId:
+            referrerMemberId:
               type: string
               format: uuid
               nullable: true

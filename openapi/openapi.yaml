@@ -17,9 +17,9 @@ info:
     - Полный список эндпоинтов доступен в разделе "Paths".
     - Описание параметров запросов находится в "Schemas".
 servers:
-  - url: "https://api.brokerassistant.com"
+  - url: "https://api.brokerassistant.com/v1"
     description: "Production server"
-  - url: "http://localhost:8080"
+  - url: "http://localhost:8080/v1"
     description: "Development server"
 tags:
   - name: "Auth"

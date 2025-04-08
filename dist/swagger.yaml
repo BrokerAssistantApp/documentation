@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: "BrokerAssistant API предоставляет функционал для управления лотами на торгах по банкротству, \nвзаимодействия между брокерами и инвесторами, а также распределения прибыли. \n\n\U0001F510 Безопасность и авторизация:\n- Авторизация реализована через JWT-токены, передаваемые в `HttpOnly`-cookie.\n- Для аутентификации необходимо выполнить логин (`/auth/login`), после чего токен автоматически отправляется в запросах.\n- Фронтенд должен отправлять запросы с `withCredentials: true`, чтобы браузер автоматически передавал `accessToken`.\n- Обновление `accessToken` выполняется через `refreshToken` (`/auth/refresh`).\n- Для выхода из системы вызывается `/auth/logout`, удаляющий сессионные токены.\n\n\U0001F4C4 Документация API:\n- Полный список эндпоинтов доступен в разделе \"Paths\".\n- Описание параметров запросов находится в \"Schemas\".\n"
 servers:
-  - url: 'https://api.brokerassistant.com'
+  - url: 'https://api.brokerassistant.com/v1'
     description: Production server
-  - url: 'http://localhost:8080'
+  - url: 'http://localhost:8080/v1'
     description: Development server
 tags:
   - name: Auth
@@ -1041,7 +1041,7 @@ paths:
               type: object
               properties:
                 reason:
-                  type: number
+                  type: string
                   example: 'Сделали ремонт, цена на рынке увеличилась'
                 salePrice:
                   type: number
@@ -1442,7 +1442,7 @@ paths:
       description: |
         Позволяет добавить участника в лот
 
-        При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referralMemberId`.
+        При передаче параметра `referralFeePercent` или `referralFeeAmount` обязательно должен быть передан параметр `referrerMemberId`.
       tags:
         - LotMembers
       parameters:
@@ -1462,7 +1462,7 @@ paths:
                 memberId:
                   type: string
                   format: uuid
-                referralMemberId:
+                referrerMemberId:
                   type: string
                   format: uuid
                   nullable: true
@@ -1571,7 +1571,7 @@ paths:
       description: |
         Позволяет изменить долю участия и реферальную комиссию участника в лоте.
 
-        При передаче параметра `referralFeePercent` или `referralFeeAmount` должен быть передан параметр `referralMemberId`, иначе они игнорируются.
+        При передаче параметра `referralFeePercent` или `referralFeeAmount` должен быть передан параметр `referrerMemberId`, иначе они игнорируются.
 
         Обновление невозможно, если лот находится в статусе `sold` или `closed`
       tags:
@@ -1596,7 +1596,7 @@ paths:
             schema:
               type: object
               properties:
-                referralMemberId:
+                referrerMemberId:
                   type: string
                   format: uuid
                   nullable: true
@@ -2634,7 +2634,7 @@ components:
           format: uuid
           description: Уникальный идентификатор записи истории статуса лота
         reason:
-          type: number
+          type: string
           example: 'Сделали ремонт, цена на рынке увеличилась'
           description: Заметка о причине изменения цены
         oldPrice:
@@ -2678,11 +2678,11 @@ components:
           format: uuid
           nullable: true
           description: Идентификатор участника
-        referralMemberId:
+        referrerMemberId:
           type: string
           format: uuid
           nullable: true
-          description: Идентификатор реферального участника
+          description: Идентификатор участника который пригласил реферального участника
         referralFeePayer:
           type: string
           enum:
