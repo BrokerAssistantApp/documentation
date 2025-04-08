@@ -1399,6 +1399,8 @@ paths:
                                 - $ref: '#/components/schemas/LotMember'
                                 - type: object
                                   properties:
+                                    isReferrer:
+                                      type: boolean
                                     totalInvestments:
                                       type: number
                                       example: 100000
@@ -1521,6 +1523,8 @@ paths:
                               - $ref: '#/components/schemas/LotMember'
                               - type: object
                                 properties:
+                                  isReferrer:
+                                    type: boolean
                                   totalInvestments:
                                     type: number
                                     example: 100000
@@ -1661,6 +1665,8 @@ paths:
                               - $ref: '#/components/schemas/LotMember'
                               - type: object
                                 properties:
+                                  isReferrer:
+                                    type: boolean
                                   totalInvestments:
                                     type: number
                                     example: 100000

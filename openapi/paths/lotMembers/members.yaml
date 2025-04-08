@@ -38,6 +38,8 @@ get:
                             - $ref: "../../openapi.yaml#/components/schemas/LotMember"
                             - type: object
                               properties:
+                                isReferrer:
+                                  type: boolean
                                 totalInvestments:
                                   type: number
                                   example: 100000
@@ -162,6 +164,8 @@ post:
                           - $ref: "../../openapi.yaml#/components/schemas/LotMember"
                           - type: object
                             properties:
+                              isReferrer:
+                                type: boolean
                               totalInvestments:
                                 type: number
                                 example: 100000
