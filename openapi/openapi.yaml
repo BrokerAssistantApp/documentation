@@ -48,8 +48,8 @@ security:
   - SessionCookiesJWT: [ ]
 
 paths:
-  /auth/register:
-    $ref: './paths/auth/register.yaml'
+  /auth/signup:
+    $ref: './paths/auth/signup.yaml'
 
   /auth/login:
     $ref: './paths/auth/login.yaml'
