@@ -32,7 +32,7 @@ tags:
 security:
   - SessionCookiesJWT: []
 paths:
-  /auth/register:
+  /auth/signup:
     post:
       summary: Регистрация брокера
       security: []
@@ -2702,20 +2702,12 @@ components:
           nullable: true
           description: Доля участника (%) в лоте
           example: 20
-        calculatedSharePercent:
-          type: number
-          description: Доля участника (%) в лоте (рассчитано системой)
-          example: 20
         shareAmount:
           type:
             - number
             - 'null'
           nullable: true
           description: Доля участника (сумма в ₽) в лоте
-          example: 200000
-        calculatedShareAmount:
-          type: number
-          description: Доля участника (сумма в ₽) в лоте (рассчитано системой)
           example: 200000
         referralFeePercent:
           type:
@@ -2724,20 +2716,12 @@ components:
           nullable: true
           description: Процент реферальной комиссии
           example: 5
-        calculatedReferralFeePercent:
-          type: number
-          description: Процент реферальной комиссии (рассчитано системой)
-          example: 5
         referralFeeAmount:
           type:
             - number
             - 'null'
           nullable: true
           description: Процент реферальной комиссии
-          example: 5000
-        calculatedReferralFeeAmount:
-          type: number
-          description: Процент реферальной комиссии (рассчитано системой)
           example: 5000
         investments:
           type: array
