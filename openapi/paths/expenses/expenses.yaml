@@ -94,8 +94,9 @@ post:
             amount:
               type: number
               example: 100000.00
-            includeInCost:
-              type: boolean
+            reimbursementMemberId:
+              type: string
+              format: uuid
   responses:
     "201":
       description: "Расход добавлен"

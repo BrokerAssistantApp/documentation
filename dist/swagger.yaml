@@ -632,6 +632,7 @@ paths:
           - Не указан параметр `brokerMemberId` - созданных брокером + где брокер как инвестор/партнер
           - Указан параметр `brokerMemberId` - конкретного участника, где участник как инвестор или партнер текущего брокера
         - **Если запрос с аккаунта участника**: где участник как инвестор + где участник как партнер
+
         Позволяет фильтровать по статусу.
       tags:
         - Lots
@@ -718,6 +719,13 @@ paths:
               properties:
                 name:
                   type: string
+                dealType:
+                  type: string
+                  enum:
+                    - self_funded
+                    - syndicated
+                    - agency
+                  example: syndicated
                 shareInputMode:
                   type: string
                   enum:
@@ -730,6 +738,9 @@ paths:
                 salePrice:
                   type: number
                   example: 3000000
+                brokerCommission:
+                  type: number
+                  example: 25000
                 brokerCommissionPercent:
                   type: number
                   example: 25
@@ -861,6 +872,9 @@ paths:
                 purchasePrice:
                   type: number
                   example: 1500000
+                brokerCommission:
+                  type: number
+                  example: 25000
                 brokerCommissionPercent:
                   type: number
                   example: 25
@@ -894,6 +908,9 @@ paths:
                           purchasePrice:
                             type: number
                             example: 1500000
+                          brokerCommission:
+                            type: number
+                            example: 25000
                           brokerCommissionPercent:
                             type: number
                             example: 25
@@ -1890,8 +1907,9 @@ paths:
                 amount:
                   type: number
                   example: 100000
-                includeInCost:
-                  type: boolean
+                reimbursementMemberId:
+                  type: string
+                  format: uuid
       responses:
         '201':
           description: Расход добавлен
@@ -1991,8 +2009,9 @@ paths:
                 amount:
                   type: number
                   example: 100000
-                includeInCost:
-                  type: boolean
+                reimbursementMemberId:
+                  type: string
+                  format: uuid
       responses:
         '200':
           description: Расход обновлён
@@ -2556,6 +2575,18 @@ components:
           type: string
           format: uuid
           description: Уникальный идентификатор лота
+        dealType:
+          type: string
+          enum:
+            - self_funded
+            - syndicated
+            - agency
+          description: |
+            Тип сделки:
+            - `self_funded` — сделка полностью за счёт брокера (без участников);
+            - `syndicated` — сделка с привлечением инвесторов и распределением прибыли;
+            - `agency` — агентская схема: брокер получает комиссию, не участвуя в финансировании.
+          example: syndicated
         status:
           type: string
           enum:
@@ -2579,9 +2610,13 @@ components:
           type: number
           description: Цена продажи лота
           example: 3000000
+        brokerCommission:
+          type: number
+          description: Комиссия брокера (₽)
+          example: 25
         brokerCommissionPercent:
           type: number
-          description: Процент комиссии брокера
+          description: Комиссия брокера (%)
           example: 25
         brokerTaxPercent:
           type: number
@@ -2752,6 +2787,10 @@ components:
           type: string
           format: uuid
           description: Идентификатор транзакции
+        reimbursementMemberId:
+          type: string
+          format: uuid
+          description: Идентификатор участника лота которому возвращается расход
         description:
           type: string
           description: Описание расходов
@@ -2760,9 +2799,6 @@ components:
           type: number
           description: Сумма транзакции
           example: 100000
-        includeInCost:
-          type: boolean
-          description: Учитывается ли расход в себестоимости лота
     LotTransaction:
       type: object
       properties:

@@ -87,6 +87,9 @@ patch:
             purchasePrice:
               type: number
               example: 1500000
+            brokerCommission:
+              type: number
+              example: 25000
             brokerCommissionPercent:
               type: number
               example: 25
@@ -120,6 +123,9 @@ patch:
                       purchasePrice:
                         type: number
                         example: 1500000
+                      brokerCommission:
+                        type: number
+                        example: 25000
                       brokerCommissionPercent:
                         type: number
                         example: 25

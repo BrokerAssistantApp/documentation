@@ -5,6 +5,18 @@ Lot:
       type: string
       format: uuid
       description: Уникальный идентификатор лота
+    dealType:
+      type: string
+      enum:
+        - self_funded
+        - syndicated
+        - agency
+      description: |
+        Тип сделки:
+        - `self_funded` — сделка полностью за счёт брокера (без участников);
+        - `syndicated` — сделка с привлечением инвесторов и распределением прибыли;
+        - `agency` — агентская схема: брокер получает комиссию, не участвуя в финансировании.
+      example: "syndicated"
     status:
       type: string
       enum:
@@ -28,9 +40,13 @@ Lot:
       type: number
       description: Цена продажи лота
       example: 3000000.00
+    brokerCommission:
+      type: number
+      description: Комиссия брокера (₽)
+      example: 25.00
     brokerCommissionPercent:
       type: number
-      description: Процент комиссии брокера
+      description: Комиссия брокера (%)
       example: 25.00
     brokerTaxPercent:
       type: number

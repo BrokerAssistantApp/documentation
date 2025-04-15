@@ -5,6 +5,10 @@ LotExpense:
       type: string
       format: uuid
       description: Идентификатор транзакции
+    reimbursementMemberId:
+      type: string
+      format: uuid
+      description: Идентификатор участника лота которому возвращается расход
     description:
       type: string
       description: Описание расходов
@@ -13,6 +17,3 @@ LotExpense:
       type: number
       description: Сумма транзакции
       example: 100000.00
-    includeInCost:
-      type: boolean
-      description: Учитывается ли расход в себестоимости лота

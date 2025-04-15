@@ -30,8 +30,9 @@ patch:
             amount:
               type: number
               example: 100000.00
-            includeInCost:
-              type: boolean
+            reimbursementMemberId:
+              type: string
+              format: uuid
   responses:
     "200":
       description: "Расход обновлён"

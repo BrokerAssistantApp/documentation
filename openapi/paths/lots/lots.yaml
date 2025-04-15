@@ -87,6 +87,13 @@ post:
           properties:
             name:
               type: string
+            dealType:
+              type: string
+              enum:
+                - self_funded
+                - syndicated
+                - agency
+              example: "syndicated"
             shareInputMode:
               type: string
               enum:
@@ -99,6 +106,9 @@ post:
             salePrice:
               type: number
               example: 3000000
+            brokerCommission:
+              type: number
+              example: 25000
             brokerCommissionPercent:
               type: number
               example: 25
