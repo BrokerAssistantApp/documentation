@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 title: Участники лотов
 description: Управление участниками, добавление, редактирование и удаление
 ---
