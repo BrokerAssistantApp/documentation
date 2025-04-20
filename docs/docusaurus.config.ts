@@ -35,7 +35,7 @@ const config: Config = {
   markdown: {
     mermaid: true,
   },
-
+  noIndex: true,
 
   presets: [
     [
