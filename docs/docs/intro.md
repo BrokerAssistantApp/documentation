@@ -8,4 +8,5 @@ sidebar_position: 1
 
 ## Разделы
 - 🧱 [Архитектура](/docs/category/architecture)
+- 🎨 [Бизнес требования](/docs/category/business-spec)
 - 🎨 [Функциональные требования](/docs/category/functional-spec)
