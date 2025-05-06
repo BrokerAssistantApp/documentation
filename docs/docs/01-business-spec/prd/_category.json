@@ -1,0 +1,9 @@
+{
+  "label": "PRD",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/business-spec/prd",
+    "description": "PRD - документ, описывающий бизнес-цели, целевую аудиторию, основные функции и этапы развития продукта."
+  }
+}
