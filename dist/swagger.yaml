@@ -11,6 +11,8 @@ servers:
 tags:
   - name: Auth
     description: Методы аутентификации
+  - name: Payments
+    description: 'Методы управления тарифами, подписками и платежами'
   - name: Users
     description: Методы работы с пользователями
   - name: Members
@@ -23,11 +25,11 @@ tags:
     description: Методы управления статусами лотов
   - name: LotMembers
     description: Управление участниками лотов
-  - name: Expenses
+  - name: LotExpenses
     description: Учет расходов
-  - name: Transactions
+  - name: LotTransactions
     description: Финансовые транзакции
-  - name: Financials
+  - name: LotFinancials
     description: Финансовый учет по лотам
 security:
   - SessionCookiesJWT: []
@@ -233,6 +235,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/current-plan:
+    $ref: '#/paths/~1auth~1logout'
   /users/me:
     get:
       summary: Получить данные текущего пользователя
@@ -1813,7 +1817,7 @@ paths:
     get:
       summary: Получить список расходов по лоту
       tags:
-        - Expenses
+        - LotExpenses
       parameters:
         - name: lotId
           in: path
@@ -1883,7 +1887,7 @@ paths:
       summary: Добавить расход по лоту
       description: 'Добавление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
       tags:
-        - Expenses
+        - LotExpenses
       parameters:
         - name: lotId
           in: path
@@ -1979,7 +1983,7 @@ paths:
       summary: Обновить расход по лоту
       description: 'Обновление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
       tags:
-        - Expenses
+        - LotExpenses
       parameters:
         - name: lotId
           in: path
@@ -2080,7 +2084,7 @@ paths:
       summary: Удалить расход по лоту
       description: 'Удаление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`'
       tags:
-        - Expenses
+        - LotExpenses
       parameters:
         - name: lotId
           in: path
@@ -2162,7 +2166,7 @@ paths:
 
         Поддерживает фильтрацию по типу и участнику.
       tags:
-        - Transactions
+        - LotTransactions
       parameters:
         - name: lotId
           in: path
@@ -2256,7 +2260,7 @@ paths:
       description: |
         Возвращает агрегированные финансовые показатели по указанному лоту, включая закупочную цену, продажную цену, чистую/грязную прибыль, комиссию брокера и прочее.
       tags:
-        - Financials
+        - LotFinancials
       parameters:
         - name: lotId
           in: path

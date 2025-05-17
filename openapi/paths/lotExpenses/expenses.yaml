@@ -1,7 +1,7 @@
 get:
   summary: "Получить список расходов по лоту"
   tags:
-    - "Expenses"
+    - "LotExpenses"
   parameters:
     - name: lotId
       in: path
@@ -72,7 +72,7 @@ post:
   summary: "Добавить расход по лоту"
   description: "Добавление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`"
   tags:
-    - "Expenses"
+    - "LotExpenses"
   parameters:
     - name: lotId
       in: path
