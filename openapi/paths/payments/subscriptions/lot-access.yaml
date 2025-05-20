@@ -1,0 +1,54 @@
+post:
+  summary: Оплатить доступ к лоту
+  description: Создаёт оплату за доступ к лоту (активирует тариф `*_lite` для конкретного лота).
+  tags:
+    - Payments
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [ lotId ]
+          properties:
+            lotId:
+              type: string
+              format: uuid
+  responses:
+    '200':
+      description: Платёж за лот создан
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: Платёж за лот создан
+                  data:
+                    type: object
+                    properties:
+                      redirectUrl:
+                        type: string
+                        format: uri
+                        example: "https://yookassa.ru/checkout?token=abc123"
+                      payment:
+                        $ref: '../../../openapi.yaml#/components/schemas/PaymentBase'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '400':
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/ValidationErrorResponse'
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'

@@ -236,7 +236,314 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorResponse'
   /payments/current-plan:
-    $ref: '#/paths/~1auth~1logout'
+    get:
+      summary: Текущий тариф пользователя
+      description: |
+        Возвращает текущий активный тариф и доступные функции (`features`) пользователя.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: Текущий тариф пользователя
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Текущий тариф пользователя
+                      data:
+                        $ref: '#/components/schemas/User.PlanCurrent'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/plan-history:
+    get:
+      summary: Получить историю тарифов пользователя
+      description: |
+        Возвращает список всех тарифов, которые когда-либо были активны у пользователя.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: История тарифов пользователя
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: История тарифов пользователя
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User.PlanBase'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/available-plans:
+    get:
+      summary: Получить список тарифов
+      description: |
+        Возвращает список всех тарифных планов, доступных для подключения.  
+        Позволяет фильтрацию по `role`: `broker`, `investor`, `academy`.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: Список тарифов
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Список тарифов
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PlanExtended'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/current-features:
+    get:
+      summary: Получить features текущего тарифа
+      description: |
+        Возвращает JSON-объект `features` из текущего активного тарифа пользователя.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: Текущие features
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Текущие features
+                      data:
+                        $ref: '#/components/schemas/PlanFeatures'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/subscription:
+    post:
+      summary: Начать подписку
+      description: Создаёт подписку на указанный тариф. Возвращает redirect URL на оплату через YooKassa.
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planCode
+              properties:
+                planCode:
+                  type: string
+                  example: broker_plus
+      responses:
+        '200':
+          description: Подписка создана
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Подписка создана
+                      data:
+                        type: object
+                        properties:
+                          redirectUrl:
+                            type: string
+                            format: uri
+                            example: 'https://yookassa.ru/checkout?token=abc123'
+                          payment:
+                            $ref: '#/components/schemas/PaymentBase'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+    delete:
+      summary: Отменить подписку
+      description: Отменяет активную подписку пользователя на тариф.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: Подписка отменена
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Подписка отменена
+                      data:
+                        type: 'null'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/lot-access:
+    post:
+      summary: Оплатить доступ к лоту
+      description: Создаёт оплату за доступ к лоту (активирует тариф `*_lite` для конкретного лота).
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lotId
+              properties:
+                lotId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Платёж за лот создан
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Платёж за лот создан
+                      data:
+                        type: object
+                        properties:
+                          redirectUrl:
+                            type: string
+                            format: uri
+                            example: 'https://yookassa.ru/checkout?token=abc123'
+                          payment:
+                            $ref: '#/components/schemas/PaymentBase'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
+  /payments/transactions:
+    get:
+      summary: Получить историю оплат
+      description: |
+        Возвращает список всех платежей пользователя: подписки, оплаты за лоты и т.д.
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: История оплат
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: История оплат
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PaymentBase'
+                      error:
+                        type: 'null'
+                      meta:
+                        type: 'null'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorResponse'
   /users/me:
     get:
       summary: Получить данные текущего пользователя
@@ -2572,6 +2879,123 @@ components:
               description: 'Указывает, является ли пользователь брокером'
     User.WithoutIsBroker:
       $ref: '#/components/schemas/User'
+    Plan:
+      type: object
+      description: Базовая информация о тарифе
+      properties:
+        code:
+          type: string
+          example: broker_base
+        name:
+          type: string
+          example: Broker Base
+        role:
+          type: string
+          enum:
+            - broker
+            - investor
+            - academy
+        price:
+          type: number
+          format: float
+          example: 2500
+        pricePeriod:
+          type: string
+          enum:
+            - per_lot
+            - monthly
+            - yearly
+    PlanExtended:
+      allOf:
+        - $ref: '#/components/schemas/Plan'
+        - type: object
+          properties:
+            isPopular:
+              type: boolean
+              example: true
+            features:
+              type: object
+              additionalProperties: true
+              example:
+                max_active_lots: 10
+                team_access: true
+    PlanFeatures:
+      type: object
+      description: Текущие features
+      example:
+        max_active_lots: 10
+        team_access: true
+    User.PlanBase:
+      type: object
+      description: Базовая информация об использовании тарифа
+      properties:
+        planCode:
+          type: string
+          example: broker_lite
+        planName:
+          type: string
+          example: Broker Lite
+        activatedAt:
+          type: string
+          format: date-time
+          example: '2024-12-01T00:00:00Z'
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+          example: false
+    User.PlanCurrent:
+      allOf:
+        - $ref: '#/components/schemas/User.PlanBase'
+        - type: object
+          properties:
+            isTrial:
+              type: boolean
+              example: false
+            features:
+              type: object
+              additionalProperties: true
+              example:
+                max_active_lots: 5
+                pdf_report: true
+    PaymentBase:
+      type: object
+      description: Платёж пользователя
+      properties:
+        id:
+          type: string
+          format: uuid
+        planCode:
+          type: string
+          example: broker_base
+        lotId:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: number
+          format: float
+        paymentType:
+          type: string
+          enum:
+            - subscription
+            - per_lot
+        status:
+          type: string
+          enum:
+            - pending
+            - paid
+            - failed
+            - canceled
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
     Lot:
       type: object
       properties:

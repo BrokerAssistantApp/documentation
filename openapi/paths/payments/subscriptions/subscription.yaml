@@ -1,0 +1,85 @@
+post:
+  summary: Начать подписку
+  description: Создаёт подписку на указанный тариф. Возвращает redirect URL на оплату через YooKassa.
+  tags: [Payments]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - planCode
+          properties:
+            planCode:
+              type: string
+              example: broker_plus
+  responses:
+    '200':
+      description: Подписка создана
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: Подписка создана
+                  data:
+                    type: object
+                    properties:
+                      redirectUrl:
+                        type: string
+                        format: uri
+                        example: "https://yookassa.ru/checkout?token=abc123"
+                      payment:
+                        $ref: '../../../openapi.yaml#/components/schemas/PaymentBase'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '400':
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/ValidationErrorResponse'
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'
+
+delete:
+  summary: Отменить подписку
+  description: Отменяет активную подписку пользователя на тариф.
+  tags:
+    - Payments
+  responses:
+    '200':
+      description: Подписка отменена
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: Подписка отменена
+                  data:
+                    type: "null"
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'

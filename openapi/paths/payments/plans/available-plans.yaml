@@ -1,0 +1,34 @@
+get:
+  summary: "Получить список тарифов"
+  description: |
+    Возвращает список всех тарифных планов, доступных для подключения.  
+    Позволяет фильтрацию по `role`: `broker`, `investor`, `academy`.
+  tags:
+    - "Payments"
+  responses:
+    '200':
+      description: Список тарифов
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Список тарифов"
+                  data:
+                    type: array
+                    items:
+                      $ref: '../../../openapi.yaml#/components/schemas/PlanExtended'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'

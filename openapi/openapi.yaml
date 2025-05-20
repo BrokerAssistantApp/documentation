@@ -179,6 +179,18 @@ components:
       $ref: './components/schemas/User.yaml#/User.WithIsBroker'
     User.WithoutIsBroker:
       $ref: './components/schemas/User.yaml#/User.WithoutIsBroker'
+    Plan:
+      $ref: './components/schemas/Plan.yaml#/PlanBase'
+    PlanExtended:
+      $ref: './components/schemas/Plan.yaml#/PlanExtended'
+    PlanFeatures:
+      $ref: './components/schemas/Plan.yaml#/PlanFeatures'
+    User.PlanBase:
+      $ref: './components/schemas/UserPlan.yaml#/User.PlanBase'
+    User.PlanCurrent:
+      $ref: './components/schemas/UserPlan.yaml#/User.PlanCurrent'
+    PaymentBase:
+      $ref: './components/schemas/Payment.yaml#/PaymentBase'
     Lot:
       $ref: './components/schemas/Lot.yaml#/Lot'
     Lot.Details:

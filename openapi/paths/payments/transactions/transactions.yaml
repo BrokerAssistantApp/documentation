@@ -1,0 +1,33 @@
+get:
+  summary: Получить историю оплат
+  description: |
+    Возвращает список всех платежей пользователя: подписки, оплаты за лоты и т.д.
+  tags:
+    - Payments
+  responses:
+    '200':
+      description: История оплат
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: История оплат
+                  data:
+                    type: array
+                    items:
+                      $ref: '../../../openapi.yaml#/components/schemas/PaymentBase'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'

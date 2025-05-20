@@ -1,0 +1,30 @@
+get:
+  summary: Получить features текущего тарифа
+  description: |
+    Возвращает JSON-объект `features` из текущего активного тарифа пользователя.
+  tags: [Payments]
+  responses:
+    '200':
+      description: Текущие features
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: Текущие features
+                  data:
+                    $ref: '../../../openapi.yaml#/components/schemas/PlanFeatures'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'
