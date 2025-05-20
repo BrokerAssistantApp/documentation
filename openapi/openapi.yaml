@@ -89,21 +89,19 @@ paths:
 
   # Payments
   /payments/current-plan:
-    $ref: './paths/payments/current-plan.yaml'
+    $ref: './paths/payments/plans/current-plan.yaml'
   /payments/plan-history:
-    $ref: './paths/payments/plan-history.yaml'
+    $ref: './paths/payments/plans/plan-history.yaml'
   /payments/available-plans:
-    $ref: './paths/payments/plan-history.yaml'
-  /payments/lot-access:
-    $ref: './paths/payments/plan-history.yaml'
-  /payments/transactions:
-    $ref: './paths/payments/plan-history.yaml'
+    $ref: './paths/payments/plans/available-plans.yaml'
+  /payments/current-features:
+    $ref: './paths/payments/plans/current-features.yaml'
   /payments/subscription:
-    $ref: './paths/payments/plan-history.yaml'
-  /payments/plan-history:
-    $ref: './paths/payments/plan-history.yaml'
-  /payments/plan-history:
-    $ref: './paths/payments/plan-history.yaml'
+    $ref: './paths/payments/subscriptions/subscription.yaml'
+  /payments/lot-access:
+    $ref: './paths/payments/subscriptions/lot-access.yaml'
+  /payments/transactions:
+    $ref: './paths/payments/transactions/transactions.yaml'
 
   # Users
   /users/me:

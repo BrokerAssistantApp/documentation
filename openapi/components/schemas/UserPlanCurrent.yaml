@@ -1,0 +1,33 @@
+UserPlan.Current:
+  type: object
+  description: "Текущий активный тариф пользователя"
+  properties:
+    code:
+      type: string
+      example: broker_base
+      description: "Уникальный код тарифа"
+    name:
+      type: string
+      example: "Broker Base"
+      description: "Название тарифа"
+    role:
+      type: string
+      enum: [broker, investor, academy]
+      example: broker
+    expiresAt:
+      type: string
+      format: date-time
+      nullable: true
+      example: "2025-08-01T00:00:00Z"
+      description: "Дата окончания действия тарифа (если применимо)"
+    isTrial:
+      type: boolean
+      example: false
+    features:
+      type: object
+      description: "JSON-набор флагов и лимитов тарифа"
+      additionalProperties: true
+      example:
+        max_active_lots: 10
+        pdf_report: true
+        ai_assistant: false
