@@ -1,0 +1,30 @@
+PaymentBase:
+  type: object
+  description: "Платёж пользователя"
+  properties:
+    id:
+      type: string
+      format: uuid
+    planCode:
+      type: string
+      example: broker_base
+    lotId:
+      type: string
+      format: uuid
+      nullable: true
+    amount:
+      type: number
+      format: float
+    paymentType:
+      type: string
+      enum: [subscription, per_lot]
+    status:
+      type: string
+      enum: [pending, paid, failed, canceled]
+    paidAt:
+      type: string
+      format: date-time
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time

@@ -1,0 +1,31 @@
+get:
+  summary: Текущий тариф пользователя
+  description: |
+    Возвращает текущий активный тариф и доступные функции (`features`) пользователя.
+  tags:
+    - Payments
+  responses:
+    '200':
+      description: Текущий тариф пользователя
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "../../../openapi.yaml#/components/schemas/BaseResponse"
+              - type: object
+                properties:
+                  message:
+                    type: string
+                    example: Текущий тариф пользователя
+                  data:
+                    $ref: '../../../openapi.yaml#/components/schemas/User.PlanCurrent'
+                  error:
+                    type: "null"
+                  meta:
+                    type: "null"
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '../../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse'

@@ -1,0 +1,42 @@
+PlanBase:
+  type: object
+  description: "Базовая информация о тарифе"
+  properties:
+    code:
+      type: string
+      example: broker_base
+    name:
+      type: string
+      example: "Broker Base"
+    role:
+      type: string
+      enum: [broker, investor, academy]
+    price:
+      type: number
+      format: float
+      example: 2500.0
+    pricePeriod:
+      type: string
+      enum: [per_lot, monthly, yearly]
+
+PlanExtended:
+  allOf:
+    - $ref: '#/PlanBase'
+    - type: object
+      properties:
+        isPopular:
+          type: boolean
+          example: true
+        features:
+          type: object
+          additionalProperties: true
+          example:
+            max_active_lots: 10
+            team_access: true
+
+PlanFeatures:
+  type: object
+  description: "Текущие features"
+  example:
+    max_active_lots: 10
+    team_access: true

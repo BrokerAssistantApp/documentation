@@ -1,5 +1,7 @@
 ---
 sidebar_position: 1
+title: Технологический стек
+description: Список технологий, инструментов и библиотек, используемых в проекте
 ---
 
 # Технологический стек
@@ -40,7 +42,7 @@ sidebar_position: 1
 
 ## API & Интеграции
 - [TenderGuru](https://www.tenderguru.ru/api) – получение данных о торгах со всех площадок (стоит 20к в год)
-- платежи - ?
+- платежи - [ЮKassa](https://yookassa.ru/) - сервис для онлайн-платежей
 - S3-хранилище [Yandex Object Storage](https://yandex.cloud/ru/services/storage) – загрузка и хранение документов
 
 ## DevOps & CI/CD

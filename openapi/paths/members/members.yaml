@@ -1,11 +1,11 @@
 get:
-  summary: "Получить список участников брокера"
-  description: "Возвращает список всех инвесторов и партнеров, участвующих в лотах брокера."
+  summary: Получить список участников брокера
+  description: Возвращает список всех инвесторов и партнеров, участвующих в лотах брокера.
   tags:
-    - "Members"
+    - Members
   responses:
     "200":
-      description: "Список участников лотов брокера"
+      description: Список участников лотов брокера
       content:
         application/json:
           schema:
@@ -15,7 +15,7 @@ get:
                 properties:
                   message:
                     type: string
-                    example: "Список участников брокера"
+                    example: Список участников брокера
                   data:
                     type: array
                     items:
@@ -25,20 +25,20 @@ get:
                   meta:
                     type: "null"
     "401":
-      description: "Пользователь не авторизован"
+      description: Пользователь не авторизован
       content:
         application/json:
           schema:
             $ref: "../../openapi.yaml#/components/schemas/UnauthorizedErrorResponse"
     "403":
-      description: "Пользователь не имеет доступа"
+      description: Пользователь не имеет доступа
       content:
         application/json:
           schema:
             $ref: "../../openapi.yaml#/components/schemas/ForbiddenErrorResponse"
 
 post:
-  summary: "Добавить участника брокера"
+  summary: Добавить участника брокера
   description: |
     Позволяет добавить участника брокера
     
@@ -46,7 +46,7 @@ post:
     - Уже существует, то привязывает его к списку участников конкретного брокера  
     - Не найден в БД, то создает пользователя с `is_broker = false` и привязывает его к списку участников конкретного брокера
   tags:
-    - "Members"
+    - Members
   security:
     - SessionCookiesJWT: []
   requestBody:

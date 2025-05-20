@@ -1,0 +1,36 @@
+User.PlanBase:
+  type: object
+  description: "Базовая информация об использовании тарифа"
+  properties:
+    planCode:
+      type: string
+      example: broker_lite
+    planName:
+      type: string
+      example: "Broker Lite"
+    activatedAt:
+      type: string
+      format: date-time
+      example: "2024-12-01T00:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      nullable: true
+    isActive:
+      type: boolean
+      example: false
+
+User.PlanCurrent:
+  allOf:
+    - $ref: '#/User.PlanBase'
+    - type: object
+      properties:
+        isTrial:
+          type: boolean
+          example: false
+        features:
+          type: object
+          additionalProperties: true
+          example:
+            max_active_lots: 5
+            pdf_report: true

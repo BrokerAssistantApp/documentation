@@ -1,5 +1,7 @@
 ---
 sidebar_position: 2
+title: Структура базы данных
+description: Схема таблиц и их взаимосвязей в базе данных проекта
 ---
 
 # Структура базы данных
@@ -9,17 +11,20 @@ sidebar_position: 2
 erDiagram
     direction LR
 
-    %% --- Пользователи ---
-    users ||--o{ sessions : "пользовательские сессии"
+    %% --- Пользователи и сессии ---
+    users ||--o{ sessions : "сессии пользователей"
     users ||--o{ broker_members : "брокер ↔ участник"
     users ||--o{ lots : "брокер создаёт лоты"
     users ||--o{ lot_members : "участвует в лотах"
-    users ||--o{ lot_transactions : "участник инициирует транзакции"
+    users ||--o{ lot_transactions : "транзакции участника"
+    users ||--o{ user_plans : "тарифы пользователя"
+    users ||--o{ payments : "оплаты пользователя"
+    users ||--o{ subscriptions : "подписки пользователя"
 
     %% --- Участие / Рефералы ---
     lot_members }o--|| users : "партнёр → инвестор (referrer_member)"
 
-    %% --- Лоты ---
+    %% --- Лоты и связанные сущности ---
     lots ||--o{ lot_status_history : "история статусов"
     lots ||--o{ lot_sale_price_history : "история изменения цены"
     lots ||--o{ lot_members : "участники лота"
@@ -27,10 +32,15 @@ erDiagram
     lots ||--o{ lot_investments : "инвестиции"
     lots ||--o{ lot_expenses : "расходы"
     lots ||--|| lot_financials : "финансовые итоги"
+    lots ||--o{ payments : "оплаты по лоту"
 
-    %% --- Транзакции и финансы ---
+    %% --- Финансовые связи ---
     lot_transactions ||--|| lot_investments : "транзакции инвестиций"
     lot_transactions ||--|| lot_expenses : "транзакции расходов"
+    user_plans ||--|| payments : "активация тарифа"
+    plans ||--o{ user_plans : "тариф в use"
+    plans ||--o{ payments : "оплачивается"
+    plans ||--o{ subscriptions : "в подписке"
 ```
 
 ## users
@@ -62,6 +72,81 @@ erDiagram
         TIMESTAMPTZ created_at "DEFAULT (now() AT TIME ZONE 'utc'::text), NOT NULL"
     }
 ```
+
+## plans
+```mermaid
+erDiagram
+    plans {
+        UUID id PK "DEFAULT gen_random_uuid(), NOT NULL"
+        TEXT code UK "CHECK ('broker_trial', 'broker_lite', 'broker_base', 'broker_plus', 'broker_pro', 'investor_free', 'investor_lite', 'investor_pro', 'academy')"
+        TEXT name "NOT NULL, CHECK (name <= 255)"
+        TEXT role "CHECK ('broker', 'investor', 'academy')"
+        NUMERIC price "DEFAULT 0, (18,2)"
+        TEXT price_period "CHECK ('per_lot', 'monthly', 'yearly')"
+        JSONB features "DEFAULT '{}'::jsonb"
+    }
+```
+> **Примечание**: В таблице `plans` предусмотрены ключевые ограничения:  
+> `code` — UNIQUE, используется как стабильный идентификатор тарифа;  
+> `role`, `price_period` — CHECK-ограничения для валидации допустимых значений.
+
+## user_plans
+```mermaid
+erDiagram
+    user_plans {
+        UUID id PK "DEFAULT gen_random_uuid(), NOT NULL"
+        UUID user_id FK "REFERENCES users(id) ON DELETE CASCADE, INDEX"
+        UUID plan_id FK "REFERENCES plans(id)"
+        UUID payment_id FK "REFERENCES payments(id)"
+        TIMESTAMPTZ created_at "DEFAULT (now() AT TIME ZONE 'utc'::text), NOT NULL"
+        TIMESTAMPTZ expires_at "DEFAULT NULL"
+        BOOLEAN is_active "DEFAULT true, INDEX WITH user_id WHERE true"
+    }
+```
+> **Примечание**: В таблице `user_plans` установлены индексы для оптимизации доступа к активному тарифу пользователя:  
+> `user_id` — для получения всех тарифов пользователя;  
+> `INDEX (user_id, is_active) WHERE is_active` = `true` — для быстрого получения текущего активного тарифа.  
+> Также присутствует внешний ключ `payment_id` — для привязки к оплате.
+
+## payments
+```mermaid
+erDiagram
+    payments {
+        UUID id PK "DEFAULT gen_random_uuid(), NOT NULL"
+        UUID user_id FK "REFERENCES users(id) ON DELETE CASCADE, INDEX"
+        UUID plan_id FK "REFERENCES plans(id)"
+        UUID lot_id FK "REFERENCES lots(id) ON DELETE SET NULL, INDEX"
+        NUMERIC amount "CHECK (amount >= 0), (18,2)"
+        TEXT payment_type "CHECK ('per_lot', 'subscription')"
+        TEXT status "CHECK ('pending', 'paid', 'failed', 'canceled'), INDEX"
+        TEXT yookassa_payment_id UK
+        TIMESTAMPTZ paid_at "DEFAULT NULL"
+        TIMESTAMPTZ created_at "DEFAULT (now() AT TIME ZONE 'utc'::text), NOT NULL"
+    }
+```
+> **Примечание**: В таблице `payments` установлены индексы для ускорения выборок и обработки оплат:  
+> `user_id` — для фильтрации всех оплат пользователя;  
+> `status` — для отслеживания состояния транзакций (например, при вебхуке);  
+> `lot_id` — индекс по `lot_id` с условием `WHERE lot_id IS NOT NULL` используется только для оплат по лоту;  
+> `yookassa_payment_id` — UNIQUE, используется для сопоставления входящих уведомлений от платёжной системы.
+
+## subscriptions
+```mermaid
+erDiagram
+    subscriptions {
+        UUID id PK "DEFAULT gen_random_uuid(), NOT NULL"
+        UUID user_id FK "REFERENCES users(id) ON DELETE CASCADE, INDEX"
+        UUID plan_id FK "REFERENCES plans(id)"
+        TIMESTAMPTZ next_payment_at "NOT NULL, INDEX"
+        TEXT status "CHECK ('active', 'canceled', 'paused'), INDEX"
+        TEXT payment_method_id
+        TIMESTAMPTZ created_at "DEFAULT (now() AT TIME ZONE 'utc'::text), NOT NULL"
+    }
+```
+> **Примечание**: В таблице `subscriptions` предусмотрены индексы для поддержки периодических автосписаний и состояния подписок:  
+> `user_id` — для быстрого получения подписки пользователя;  
+> `status` — для фильтрации активных / приостановленных / отменённых подписок;  
+> `next_payment_at` — индекс используется воркером / cron-задачей для поиска подписок, требующих списания.
 
 ## broker_members
 ```mermaid

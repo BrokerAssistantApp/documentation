@@ -2,7 +2,7 @@ patch:
   summary: "Обновить расход по лоту"
   description: "Обновление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`"
   tags:
-    - "Expenses"
+    - "LotExpenses"
   parameters:
     - name: lotId
       in: path
@@ -102,7 +102,7 @@ delete:
   summary: "Удалить расход по лоту"
   description: "Удаление расхода по лоту невозможно, если лот находится в статусе `sold` или `closed`"
   tags:
-    - "Expenses"
+    - "LotExpenses"
   parameters:
     - name: lotId
       in: path

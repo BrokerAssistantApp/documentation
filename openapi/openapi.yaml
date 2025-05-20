@@ -24,6 +24,8 @@ servers:
 tags:
   - name: "Auth"
     description: "Методы аутентификации"
+  - name: "Payments"
+    description: "Методы управления тарифами, подписками и платежами"
   - name: "Users"
     description: "Методы работы с пользователями"
   - name: "Members"
@@ -36,11 +38,11 @@ tags:
     description: "Методы управления статусами лотов"
   - name: "LotMembers"
     description: "Управление участниками лотов"
-  - name: "Expenses"
+  - name: "LotExpenses"
     description: "Учет расходов"
-  - name: "Transactions"
+  - name: "LotTransactions"
     description: "Финансовые транзакции"
-  - name: "Financials"
+  - name: "LotFinancials"
     description: "Финансовый учет по лотам"
 #  - name: "Analytics"
 #    description: "Аналитические данные"
@@ -48,104 +50,109 @@ security:
   - SessionCookiesJWT: [ ]
 
 paths:
+  # Auth
   /auth/signup:
     $ref: './paths/auth/signup.yaml'
-
   /auth/login:
     $ref: './paths/auth/login.yaml'
-
   /auth/status:
     $ref: './paths/auth/status.yaml'
-
   /auth/refresh:
     $ref: './paths/auth/refresh.yaml'
-
   /auth/logout:
     $ref: './paths/auth/logout.yaml'
+  #  /auth/yandex/login:
+  #    get:
+  #      summary: "Перенаправляет пользователя на Яндекс"
+  #      tags:
+  #        - "Auth"
+  #  /auth/yandex/callback:
+  #    get:
+  #      summary: "Обрабатывает code, получает accessToken от Яндекса"
+  #      tags:
+  #        - "Auth"
+  #  /auth/yandex/register:
+  #    post:
+  #      summary: "Создаёт пользователя с auth_method = 'yandex'"
+  #      tags:
+  #        - "Auth"
+  #  /auth/yandex/connect:
+  #    post:
+  #      summary: "Привязывает Яндекс ID к существующему аккаунту"
+  #      tags:
+  #        - "Auth"
+  #  /auth/yandex/unlink:
+  #    post:
+  #      summary: "Отвязывает Яндекс ID"
+  #      tags:
+  #        - "Auth"
 
-#  /auth/yandex/login:
-#    get:
-#      summary: "Перенаправляет пользователя на Яндекс"
-#      tags:
-#        - "Auth"
+  # Payments
+  /payments/current-plan:
+    $ref: './paths/payments/plans/current-plan.yaml'
+  /payments/plan-history:
+    $ref: './paths/payments/plans/plan-history.yaml'
+  /payments/available-plans:
+    $ref: './paths/payments/plans/available-plans.yaml'
+  /payments/current-features:
+    $ref: './paths/payments/plans/current-features.yaml'
+  /payments/subscription:
+    $ref: './paths/payments/subscriptions/subscription.yaml'
+  /payments/lot-access:
+    $ref: './paths/payments/subscriptions/lot-access.yaml'
+  /payments/transactions:
+    $ref: './paths/payments/transactions/transactions.yaml'
 
-#  /auth/yandex/callback:
-#    get:
-#      summary: "Обрабатывает code, получает accessToken от Яндекса"
-#      tags:
-#        - "Auth"
-
-#  /auth/yandex/register:
-#    post:
-#      summary: "Создаёт пользователя с auth_method = 'yandex'"
-#      tags:
-#        - "Auth"
-
-#  /auth/yandex/connect:
-#    post:
-#      summary: "Привязывает Яндекс ID к существующему аккаунту"
-#      tags:
-#        - "Auth"
-
-#  /auth/yandex/unlink:
-#    post:
-#      summary: "Отвязывает Яндекс ID"
-#      tags:
-#        - "Auth"
-
+  # Users
   /users/me:
     $ref: './paths/users/users.me.yaml'
 
+  # Members
   /members:
     $ref: './paths/members/members.yaml'
-
   /members/{brokerMemberId}:
     $ref: './paths/members/members.brokerMemberId.yaml'
 
+  # Lots
   /lots:
     $ref: './paths/lots/lots.yaml'
-
   /lots/{lotId}:
     $ref: './paths/lots/lots.lotId.yaml'
 
+  # LotSalePrice
   /lots/{lotId}/sale-price:
     $ref: './paths/lotSalePrice/sale-price.yaml'
-
   /lots/{lotId}/sale-price-history:
     $ref: './paths/lotSalePrice/sale-price-history.yaml'
 
+  # LotStatus
   /lots/{lotId}/status:
     $ref: './paths/lotStatus/status.yaml'
-
   /lots/{lotId}/status-history:
     $ref: './paths/lotStatus/status-history.yaml'
 
+  # LotMembers
   /lots/{lotId}/members:
     $ref: './paths/lotMembers/members.yaml'
-
   /lots/{lotId}/members/{memberId}:
     $ref: './paths/lotMembers/members.memberId.yaml'
 
+  # Expenses
   /lots/{lotId}/expenses:
-    $ref: './paths/expenses/expenses.yaml'
-
+    $ref: './paths/lotExpenses/expenses.yaml'
   /lots/{lotId}/expenses/{transactionId}:
-    $ref: './paths/expenses/expenses.transactionId.yaml'
+    $ref: './paths/lotExpenses/expenses.transactionId.yaml'
 
+  # Transactions
+  # TODO: эндпоинты нуждаются в доработке
   /lots/{lotId}/transactions:
-    $ref: './paths/transactions/transactions.yaml'
+    $ref: './paths/lotTransactions/transactions.yaml'
 
+  # Financials
+  # TODO: эндпоинты нуждаются в доработке
   /lots/{lotId}/financials:
-    $ref: './paths/financials/financials.yaml'
+    $ref: './paths/lotFinancials/financials.yaml'
 
-#  /analytics/dashboard:
-#    get:
-#      summary: "Получить общую статистику"
-#      tags:
-#        - "Analytics"
-#      responses:
-#        "200":
-#          description: "Данные аналитики"
 components:
   schemas:
     BaseResponse:
@@ -172,6 +179,18 @@ components:
       $ref: './components/schemas/User.yaml#/User.WithIsBroker'
     User.WithoutIsBroker:
       $ref: './components/schemas/User.yaml#/User.WithoutIsBroker'
+    Plan:
+      $ref: './components/schemas/Plan.yaml#/PlanBase'
+    PlanExtended:
+      $ref: './components/schemas/Plan.yaml#/PlanExtended'
+    PlanFeatures:
+      $ref: './components/schemas/Plan.yaml#/PlanFeatures'
+    User.PlanBase:
+      $ref: './components/schemas/UserPlan.yaml#/User.PlanBase'
+    User.PlanCurrent:
+      $ref: './components/schemas/UserPlan.yaml#/User.PlanCurrent'
+    PaymentBase:
+      $ref: './components/schemas/Payment.yaml#/PaymentBase'
     Lot:
       $ref: './components/schemas/Lot.yaml#/Lot'
     Lot.Details:

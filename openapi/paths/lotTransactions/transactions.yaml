@@ -5,7 +5,7 @@ get:
     
     Поддерживает фильтрацию по типу и участнику.
   tags:
-    - "Transactions"
+    - "LotTransactions"
   parameters:
     - name: lotId
       in: path
